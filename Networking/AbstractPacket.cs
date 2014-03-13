@@ -12,6 +12,12 @@ namespace KMP.Networking
         /// The type of packet
         /// </summary>
         public PacketType PacketType { get; private set; }
+
+        /// <summary>
+        /// The Priority of the Packet
+        /// </summary>
+        public PacketPriority PacketPriority { get; private set; }
+
         protected AbstractPacket(PacketType packetType)
         {
             this.PacketType = packetType;
@@ -56,5 +62,12 @@ namespace KMP.Networking
                 DecodePacket(message);
             }
         }
+    }
+    
+    public enum PacketPriority
+    {
+        High,
+        Normal,
+        Low
     }
 }
