@@ -8,6 +8,8 @@ namespace KMP.Networking
 {
     public class NetworkMessage
     {
+        private const Encoding STRING_ENCODING = Encoding.UTF8;
+
         public PacketType Type { get; private set; }
         public byte[] Data { get; private set; }
         private int cursor;
@@ -233,7 +235,7 @@ namespace KMP.Networking
         /// <param name="s">String</param>
         public void WriteString(String s)
         {
-            WriteByteArray(Encoding.UTF8.GetBytes(s));
+            WriteByteArray(STRING_ENCODING.GetBytes(s));
         }
 
         /// <summary>
@@ -242,7 +244,7 @@ namespace KMP.Networking
         /// <returns>UTF8 String</returns>
         public String ReadString()
         {
-            return Encoding.UTF8.GetString(ReadByteArray());
+            return STRING_ENCODING.GetString(ReadByteArray());
         }
 
         /// <summary>
