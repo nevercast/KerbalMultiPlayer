@@ -6,7 +6,7 @@ using System.Text;
 
 namespace KMP.Networking
 {
-    public class NetworkMessage
+    public class NetworkMessage : IDisposable
     {
         private const Encoding STRING_ENCODING = Encoding.UTF8;
 
@@ -260,9 +260,18 @@ namespace KMP.Networking
             return data;
         }
 
-        public enum PacketType
+        public void Dispose()
         {
-
+            this.Data = null;
         }
+    }
+
+
+
+    public enum PacketType
+    {
+        Handshake   /* Client: Username, Version */
+            /* Server: ResponseCode, Protocol, Version, ClientID, Mode */,
+
     }
 }
