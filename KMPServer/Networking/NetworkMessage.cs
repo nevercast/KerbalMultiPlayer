@@ -245,6 +245,19 @@ namespace KMP.Networking
             return Encoding.UTF8.GetString(ReadByteArray());
         }
 
+        /// <summary>
+        /// Compacts the internal array and returns the result with the Packet Type attached
+        /// </summary>
+        /// <returns>Returns compacted array</returns>
+        public byte[] GetPacket()
+        {
+            Compact();
+            byte[] data = new byte[this.Data.Length + 1];
+            data[0] = (byte)Type;
+            Array.Copy(this.Data, 0, data, 1, this.Data.Length);
+            return data;
+        }
+
         public enum PacketType
         {
 
