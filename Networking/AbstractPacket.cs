@@ -27,12 +27,15 @@ namespace KMP.Networking
         /// Used to write information to the message
         /// </summary>
         /// <param name="message">Empty message to fill with packet info</param>
-        protected abstract void PreparePacket(NetworkMessage message);
+        /// <param name="side">The side that is sending the packet</param>
+        protected abstract void PreparePacket(NetworkMessage message, PacketSide side);
+
         /// <summary>
         /// Used to read information from message
         /// </summary>
         /// <param name="message">Message containing packet info</param>
-        protected abstract void DecodePacket(NetworkMessage message);
+        /// <param name="side">The side that is decoding the packet (receiver)</param>
+        protected abstract void DecodePacket(NetworkMessage message, PacketSide side);
 
         /// <summary>
         /// Converts this packet in to a blob ready for transport
@@ -64,10 +67,22 @@ namespace KMP.Networking
         }
     }
     
+    /// <summary>
+    /// Specifies the queue that the packet will be placed in
+    /// </summary>
     public enum PacketPriority
     {
         High,
         Normal,
         Low
+    }
+
+    /// <summary>
+    /// The side the packet is being processed on
+    /// </summary>
+    public enum PacketSide
+    {
+        Client,
+        Server
     }
 }
