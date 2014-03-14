@@ -258,6 +258,56 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Write a boolean value
+        /// </summary>
+        /// <param name="b">Boolean value to write</param>
+        public void WriteBoolean(Boolean b)
+        {
+            WriteByte((byte)(b ? 255 : 0));
+        }
+
+        /// <summary>
+        /// Read a boolean value
+        /// </summary>
+        /// <returns>Boolean</returns>
+        public Boolean ReadBoolean()
+        {
+            return ReadByte() != 0;
+        }
+
+        /// <summary>
+        /// Writes a Guid, only writes a single byte if it's empty to converse bandwidth
+        /// </summary>
+        /// <param name="guid">Guid to write</param>
+        public void WriteGuid(Guid guid)
+        {
+            WriteBoolean(guid == Guid.Empty);
+            if(guid != Guid.Empty) WriteBytes(guid.ToByteArray());
+        }
+
+        /// <summary>
+        /// Reads a Guid
+        /// </summary>
+        /// <returns>Guid</returns>
+        public Guid ReadGuid()
+        {
+            try
+            {
+                if (ReadBoolean()) return Guid.Empty;
+                return new Guid(ReadBytes(16));
+            }
+            catch (ArgumentException ex)
+            {
+                Log.Debug("NetworkMessage Error: ReadGuid - Invalid array: {0}", ex);
+            }
+            catch (Exception ex)
+            {
+                Log.Debug("NetworkMessage Error: ReadGuid: {0}", ex);
+            }
+            return Guid.Empty;
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>

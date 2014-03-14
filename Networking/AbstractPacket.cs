@@ -41,11 +41,12 @@ namespace KMP.Networking
         /// Converts this packet in to a blob ready for transport
         /// </summary>
         /// <returns>Serialized packet</returns>
-        public byte[] BuildPacket()
+        /// <param name="side">The side that is going to send the packet</param>
+        public byte[] BuildPacket(PacketSide side)
         {
             using (NetworkMessage message = new NetworkMessage(PacketType))
             {
-                PreparePacket(message);
+                PreparePacket(message, side);
                 return message.GetPacket();
             }
         }
@@ -54,7 +55,8 @@ namespace KMP.Networking
         /// Creates a Packet from the data
         /// </summary>
         /// <param name="data">data to create packet from</param>
-        public void DerivePacket(byte[] data)
+        /// <param name="side">The side that has received the packet</param>
+        public void DerivePacket(byte[] data, PacketSide side)
         {
             using (NetworkMessage message = NetworkMessage.BuildFromData(data))
             {
@@ -62,7 +64,7 @@ namespace KMP.Networking
                 {
                     throw new IOException(String.Format("Packet type {0} cannot be derived to {1}", message.Type, PacketType);
                 }
-                DecodePacket(message);
+                DecodePacket(message, side);
             }
         }
     }
@@ -79,6 +81,8 @@ namespace KMP.Networking
 
     /// <summary>
     /// The side the packet is being processed on
+    /// Side is used to change the contents of the packet to allow 
+    /// different data outgoing and incoming for the same packet id
     /// </summary>
     public enum PacketSide
     {
