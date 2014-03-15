@@ -308,6 +308,32 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Writes a transmittable object to the message
+        /// </summary>
+        /// <param name="transmittable">Object to write</param>
+        public void WriteObject(ITransmittable transmittable)
+        {
+            transmittable.TransmitObject(this);
+        }
+
+        /// <summary>
+        /// Reads a transmittable object from the message
+        /// </summary>
+        /// <typeparam name="T">Object Type</typeparam>
+        /// <returns>Object instance of Object Type</returns>
+        public T ReadObject<T>() where T:ITransmittable
+        {
+            var type = typeof(T);
+            var instance = type.GetConstructor(System.Type.EmptyTypes).Invoke(null) as ITransmittable;
+            if (instance != null)
+            {
+                instance.ReceiveObject(this);
+            }
+            else return default(T);
+            return (T)instance;
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>

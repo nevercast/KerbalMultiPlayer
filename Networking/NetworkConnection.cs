@@ -15,7 +15,7 @@ namespace KMP.Networking
         private const int THREAD_SLEEP_MS = 20;
         private PriorityQueue<AbstractPacket> PacketQueue = new PriorityQueue<AbstractPacket>();
         private PriorityQueue<AbstractPacket> OutboundQueue = new PriorityQueue<AbstractPacket>();
-        private NetworkDataTransport Transport { get; private set; }
+        public NetworkDataTransport Transport { get; private set; }
         /// <summary>
         /// Create a new Network Connection
         /// </summary>
