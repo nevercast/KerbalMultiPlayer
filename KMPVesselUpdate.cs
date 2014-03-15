@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Runtime.Serialization;
+using KMP.Networking;
 
 namespace KMP
 {
@@ -46,8 +47,7 @@ namespace KMP
 		FUTURE
 	}
 	
-	[Serializable()]
-	public class KMPVesselDetail
+	public class KMPVesselDetail : ITransmittable
 	{
 		/// <summary>
 		/// The specific activity the vessel is performing in its situation
@@ -88,11 +88,30 @@ namespace KMP
 			mass = 0.0f;
 			idle = false;
 		}
-		
-	}
 
-	[Serializable()]
-	public class KMPVesselInfo
+
+        public void TransmitObject(NetworkMessage message)
+        {
+            message.WriteEnum<Activity>(activity);
+            message.WriteBoolean(idle);
+            message.WriteByte(numCrew);
+            message.WriteByte(percentFuel);
+            message.WriteByte(percentRCS);
+            message.WriteFloat(mass);
+        }
+
+        public void ReceiveObject(NetworkMessage message)
+        {
+            activity = message.ReadEnum<Activity>();
+            idle = message.ReadBoolean();
+            numCrew = message.ReadByte();
+            percentFuel = message.ReadByte();
+            percentRCS = message.ReadByte();
+            mass = message.ReadFloat();
+        }
+    }
+
+	public class KMPVesselInfo :ITransmittable
 	{
 
 		/// <summary>
@@ -132,11 +151,30 @@ namespace KMP
 			bodyName = copyFrom.bodyName;
 			detail = copyFrom.detail;
 		}
-	}
 
-    [Serializable()]
-    public class KMPVesselUpdate : KMPVesselInfo
+        public void TransmitObject(NetworkMessage message)
+        {
+            message.WriteEnum<Situation>(situation);
+            message.WriteEnum<State>(state);
+            message.WriteFloat(timeScale);
+            message.WriteString(bodyName);
+            message.WriteObject(detail);
+        }
+
+        public void ReceiveObject(NetworkMessage message)
+        {
+            situation = message.ReadEnum<Situation>();
+            state = message.ReadEnum<State>();
+            timeScale = message.ReadFloat();
+            bodyName = message.ReadString();
+            detail = message.ReadObject<KMPVesselDetail>();
+        }
+    }
+
+
+    public class KMPVesselUpdate : KMPVesselInfo, ITransmittable
     {
+        
 		/// <summary>
 		/// The vessel name
 		/// </summary>
@@ -206,6 +244,17 @@ namespace KMP
 		{
 			InitKMPVesselUpdate(_vessel, includeProtoVessel);
 		}
+
+        public new void TransmitObject(NetworkMessage message)
+        {
+            base.TransmitObject(message); // Load parent class data first
+        }
+
+        public new void ReceiveObject(NetworkMessage message)
+        {
+            base.ReceiveObject(message); // Write parent class data
+        }
+
 		
 		public KMPVesselUpdate(Guid gameGuid, ConfigNode protoVessel)
         {
