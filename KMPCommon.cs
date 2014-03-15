@@ -1,4 +1,5 @@
 using ICSharpCode.SharpZipLib.GZip;
+using KMP.Networking;
 using System;
 using System.IO;
 using System.Linq;
@@ -14,6 +15,14 @@ public class KMPCommon
             return Assembly.GetExecutingAssembly().GetName().Version.ToString();
         }
     }
+
+    public static PacketSide Side { get; set; }
+
+    static KMPCommon()
+    {
+        Side = PacketSide.Client;
+    }
+
 
     public const Int32 FILE_FORMAT_VERSION = 10000;
     public const Int32 NET_PROTOCOL_VERSION = 10016;

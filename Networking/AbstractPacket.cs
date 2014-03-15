@@ -16,7 +16,7 @@ namespace KMP.Networking
         /// <summary>
         /// The Priority of the Packet
         /// </summary>
-        public PacketPriority PacketPriority { get; private set; }
+        public Priority PacketPriority { get; private set; }
 
         protected AbstractPacket(PacketType packetType)
         {
@@ -28,6 +28,7 @@ namespace KMP.Networking
         /// </summary>
         /// <param name="message">Empty message to fill with packet info</param>
         /// <param name="side">The side that is sending the packet</param>
+        /// <remarks>If you need to set a Priority on the packet for handling, do it here</remarks>
         protected abstract void PreparePacket(NetworkMessage message, PacketSide side);
 
         /// <summary>
@@ -62,21 +63,16 @@ namespace KMP.Networking
             {
                 if (message.Type != PacketType)
                 {
-                    throw new IOException(String.Format("Packet type {0} cannot be derived to {1}", message.Type, PacketType);
+                    throw new IOException(String.Format("Packet type {0} cannot be derived to {1}", message.Type, PacketType));
                 }
                 DecodePacket(message, side);
             }
         }
-    }
-    
-    /// <summary>
-    /// Specifies the queue that the packet will be placed in
-    /// </summary>
-    public enum PacketPriority
-    {
-        High,
-        Normal,
-        Low
+
+        public static PacketType Identify(byte[] data)
+        {
+            return (PacketType)data[0];
+        }
     }
 
     /// <summary>

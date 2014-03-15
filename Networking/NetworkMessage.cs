@@ -18,7 +18,7 @@ namespace KMP.Networking
         /// The extra amonut of bytes to expand the array by to delay the next expansion
         /// </summary>
         private const int EXPAND_EXTRA = 1024;
-        private const Encoding STRING_ENCODING = Encoding.UTF8;
+        private readonly Encoding STRING_ENCODING = Encoding.UTF8;
 
         public PacketType Type { get; private set; }
         public byte[] Data { get; private set; }
