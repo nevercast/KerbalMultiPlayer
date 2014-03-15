@@ -334,6 +334,29 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Write an Enum to the Message
+        /// </summary>
+        /// <typeparam name="T">Type of Enum</typeparam>
+        /// <param name="e">Enum value</param>
+        public void WriteEnum<T>(T e) where T: struct, IConvertible
+        {
+            if(!typeof(T).IsEnum) throw new ArgumentException("Type for WriteEnum is not an Enum");
+            var intValue = (int)Convert.ChangeType(e, e.GetTypeCode());
+            WriteInt(intValue);
+        }
+
+        /// <summary>
+        /// Read an Enum from the Message
+        /// </summary>
+        /// <typeparam name="T">Type of Enum</typeparam>
+        /// <returns>Enum value</returns>
+        public T ReadEnum<T>() where T : struct, IConvertible
+        {
+            var value = ReadInt();
+            return (T)Enum.ToObject(typeof(T), value);
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>
