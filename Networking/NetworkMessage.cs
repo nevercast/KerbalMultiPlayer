@@ -501,16 +501,6 @@ namespace KMP.Networking
         {
             this.Data = null;
         }
-
-        private enum VectorType
-        {
-            Vector2,
-            Vector2d,
-            Vector3,
-            Vector3d,
-            Vector4,
-            Vector4d
-        }
     }
 
 
