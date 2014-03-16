@@ -193,33 +193,33 @@ namespace KMP
 		/// <summary>
 		/// The position of the vessel relative to its parent body transform
 		/// </summary>
-        public float[] pos;
+        public Vector3 pos;
 
 		/// <summary>
 		/// The direction of the vessel relative to its parent body transform
 		/// </summary>
-        public float[] dir;
+        public Vector3 dir;
 
 		/// <summary>
 		/// The velocity of the vessel relative to its parent body transform
 		/// </summary>
-        public float[] vel;
+        public Vector3 vel;
 		
 		/// <summary>
 		/// Orbit and surface velocity vectors
 		/// </summary>
-		public double[] o_vel;
-		public double[] s_vel;
+		public Vector3d o_vel;
+		public Vector3d s_vel;
 		
 		/// <summary>
 		/// Used for transferring various context-dependent double values: relative vessel positions in docking mode, needed orbit properties
 		/// </summary>
-		public double[] w_pos;
+		public Vector3d w_pos;
 		
 		/// <summary>
 		/// Rotation quat
 		/// </summary>
-		public float[] rot;
+		public Vector4 rot;
 		
 		public ConfigNode protoVesselNode = null;
 		public Guid kmpID = Guid.Empty;

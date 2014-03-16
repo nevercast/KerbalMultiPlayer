@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using UnityEngine;
 
 namespace KMP.Networking
 {
@@ -357,6 +358,133 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Write Vector3
+        /// </summary>
+        /// <param name="vector">Vector3</param>
+        public void WriteVector(Vector3 vector)
+        {
+            WriteFloat(vector.x);
+            WriteFloat(vector.y);
+            WriteFloat(vector.z);
+        }
+
+        /// <summary>
+        /// Write Vector3d
+        /// </summary>
+        /// <param name="vector">Vector3d</param>
+        public void WriteVector(Vector3d vector)
+        {
+            WriteDouble(vector.x);
+            WriteDouble(vector.y);
+            WriteDouble(vector.z);
+        }
+
+        /// <summary>
+        /// Write Vector2
+        /// </summary>
+        /// <param name="vector">Vector2</param>
+        public void WriteVector(Vector2 vector)
+        {
+            WriteFloat(vector.x);
+            WriteFloat(vector.y);
+        }
+
+        /// <summary>
+        /// Write Vector2d
+        /// </summary>
+        /// <param name="vector">Vector2d</param>
+        public void WriteVector(Vector2d vector)
+        {
+            WriteDouble(vector.x);
+            WriteDouble(vector.y);
+        }
+
+        /// <summary>
+        /// Write Vector4
+        /// </summary>
+        /// <param name="vector">Vector4</param>
+        public void WriteVector(Vector4 vector)
+        {
+            WriteFloat(vector.x);
+            WriteFloat(vector.y);
+            WriteFloat(vector.z);
+            WriteFloat(vector.w);
+        }
+        /// <summary>
+        /// Write Vector4d
+        /// </summary>
+        /// <param name="vector">Vector4d</param>
+        public void WriteVector(Vector4d vector)
+        {
+            WriteDouble(vector.x);
+            WriteDouble(vector.y);
+            WriteDouble(vector.z);
+            WriteDouble(vector.w);            
+        }
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector2</returns>
+        public Vector2 ReadVector2()
+        {
+            return new Vector2(
+                ReadFloat(), ReadFloat());
+        }
+
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector2d</returns>
+        public Vector2d ReadVector2d()
+        {
+            return new Vector2d(
+                ReadDouble(), ReadDouble());
+        }
+
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector3</returns>
+        public Vector3 ReadVector3()
+        {
+            return new Vector3(
+                ReadFloat(), ReadFloat(), ReadFloat());
+        }
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector3d</returns>
+        public Vector3d ReadVector3d()
+        {
+            return new Vector3d(
+                ReadDouble(), ReadDouble(), ReadDouble());
+        }
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector4</returns>
+        public Vector4 ReadVector4()
+        {
+            return new Vector4(
+                ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
+        }
+
+        /// <summary>
+        /// Read Vector
+        /// </summary>
+        /// <returns>Vector4d</returns>
+        public Vector4d ReadVector4d()
+        {
+            return new Vector4d(
+                ReadDouble(), ReadDouble(), ReadDouble(), ReadDouble());
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>
@@ -372,6 +500,16 @@ namespace KMP.Networking
         public void Dispose()
         {
             this.Data = null;
+        }
+
+        private enum VectorType
+        {
+            Vector2,
+            Vector2d,
+            Vector3,
+            Vector3d,
+            Vector4,
+            Vector4d
         }
     }
 
