@@ -63,7 +63,7 @@ namespace KMP.Networking
             {
                 if (message.Type != PacketType)
                 {
-                    throw new IOException(String.Format("Packet type {0} cannot be derived to {1}", message.Type, PacketType));
+                    throw new IOException(String.Format("Packet type {1} cannot be derived from {0}", message.Type, PacketType));
                 }
                 DecodePacket(message, side);
             }

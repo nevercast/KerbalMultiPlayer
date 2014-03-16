@@ -53,8 +53,10 @@
     <Compile Include="KMPMenuItem.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Networking\AbstractPacket.cs" />
+    <Compile Include="Networking\ConfigNodeSerializer.cs" />
     <Compile Include="Networking\ITransmittable.cs" />
     <Compile Include="Networking\NetworkConnection.cs" />
+    <Compile Include="Networking\NetworkConnectionListener.cs" />
     <Compile Include="Networking\NetworkHelper.cs" />
     <Compile Include="Networking\NetworkMessage.cs" />
     <Compile Include="Networking\Packets\HandshakePacket.cs" />
