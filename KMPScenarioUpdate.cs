@@ -4,12 +4,11 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 using System.Runtime.Serialization;
+using KMP.Networking;
 
 namespace KMP
 {
-
-    [Serializable()]
-    public class KMPScenarioUpdate
+    public class KMPScenarioUpdate : ITransmittable
     {
 		/// <summary>
 		/// The Scenario name
@@ -18,7 +17,9 @@ namespace KMP
 
 		public ConfigNode scenarioNode = null;
 		public double tick = 0d;
-		
+
+        private KMPScenarioUpdate() { } // Used by ITransmittable
+
 		public KMPScenarioUpdate(string _name, ScenarioModule _module = null, double _tick = 0d)
         {
 			scenarioNode = new ConfigNode();
@@ -36,6 +37,27 @@ namespace KMP
 		{
 			scenarioNode = node;
 		}
+
+        public void TransmitObject(NetworkMessage message)
+        {
+            message.WriteString(name);
+            message.WriteDouble(tick);
+            message.WriteBoolean(scenarioNode != null);
+            if (scenarioNode != null)
+            {
+                message.WriteConfigNode(scenarioNode);
+            }
+        }
+
+        public void ReceiveObject(NetworkMessage message)
+        {
+            name = message.ReadString();
+            tick = message.ReadDouble();
+            if (message.ReadBoolean())
+            {
+                scenarioNode = message.ReadConfigNode();
+            }
+        }
     }
 
 }

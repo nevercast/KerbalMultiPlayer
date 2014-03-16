@@ -529,6 +529,24 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Write a ConfigNode
+        /// </summary>
+        /// <param name="node">ConfigNode instance</param>
+        public void WriteConfigNode(ConfigNode node)
+        {
+            WriteByteArray(ConfigNodeSerializer.Serialize(node));
+        }
+
+        /// <summary>
+        /// Read ConfigNode from message
+        /// </summary>
+        /// <returns>ConfigNode</returns>
+        public ConfigNode ReadConfigNode()
+        {
+            return ConfigNodeSerializer.Deserialize(ReadByteArray());
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>

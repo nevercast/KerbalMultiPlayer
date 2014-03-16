@@ -1161,17 +1161,14 @@ namespace KMP
 			Vector3 vel = vessel.mainBody.transform.InverseTransformDirection(vessel.GetObtVelocity());
 			Vector3d o_vel = vessel.obt_velocity;
 			Vector3d s_vel = vessel.srf_velocity;
-			Vector3 forw = vessel.mainBody.transform.InverseTransformDirection(vessel.transform.forward);
+            Quaternion rot = vessel.transform.rotation;
 			
-			for (int i = 0; i < 3; i++)
-			{
-				update.pos[i] = pos[i];
-				update.dir[i] = dir[i];
-				update.vel[i] = vel[i];
-				update.o_vel[i] = o_vel[i];
-				update.s_vel[i] = s_vel[i];
-				update.rot[i] = forw[i];
-			}
+			update.pos = pos;
+			update.dir = dir;
+            update.vel = vel;
+            update.o_vel = o_vel;
+            update.s_vel = s_vel;
+            update.rot = rot;
 
 			update.w_pos[0] = vessel.orbit.LAN;
 			if (vessel.situation == Vessel.Situations.LANDED || vessel.situation == Vessel.Situations.SPLASHED)
