@@ -7,6 +7,11 @@ namespace KMP.Networking.Packets
 {
     public class HandshakePacket : AbstractPacket
     {
+        /// <summary>
+        /// Create new Handshake packet
+        /// </summary>
+        public HandshakePacket() : base(PacketType.Handshake) { }
+
         // Propeties sent by the client
         #region Client Properties
         /// <summary>

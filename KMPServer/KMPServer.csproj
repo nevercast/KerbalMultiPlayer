@@ -75,12 +75,6 @@
   </Target>
   -->
   <ItemGroup>
-    <ProjectReference Include="..\KerbalMultiPlayer.csproj">
-      <Project>{D7FB689F-A23A-4FC9-9098-CCC20B9B9E6D}</Project>
-      <Name>KerbalMultiPlayer</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="app.config" />
     <None Include="KMPServer.exe.config" />
     <None Include="Service References\ServerList\Report.wsdl" />
@@ -117,5 +111,11 @@
       <Generator>WCF Proxy Generator</Generator>
       <LastGenOutput>Reference.cs</LastGenOutput>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\KerbalMultiPlayer.csproj">
+      <Project>{d7fb689f-a23a-4fc9-9098-ccc20b9b9e6d}</Project>
+      <Name>KerbalMultiPlayer</Name>
+    </ProjectReference>
   </ItemGroup>
 </Project>

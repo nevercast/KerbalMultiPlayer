@@ -485,6 +485,50 @@ namespace KMP.Networking
         }
 
         /// <summary>
+        /// Write Quaternion
+        /// </summary>
+        /// <param name="quat">Quaternion</param>
+        public void WriteQuaternion(Quaternion quat)
+        {
+            WriteFloat(quat.x);
+            WriteFloat(quat.y);
+            WriteFloat(quat.z);
+            WriteFloat(quat.w);
+        }
+
+        /// <summary>
+        /// Write QuaternionD
+        /// </summary>
+        /// <param name="quatd">QuaternionD</param>
+        public void WriteQuaternion(QuaternionD quatd)
+        {
+            WriteDouble(quatd.x);
+            WriteDouble(quatd.y);
+            WriteDouble(quatd.z);
+            WriteDouble(quatd.w);
+        }
+
+        /// <summary>
+        /// Read Quaternion
+        /// </summary>
+        /// <returns>Quaternion</returns>
+        public Quaternion ReadQuaternion()
+        {
+            return new Quaternion(
+                ReadFloat(), ReadFloat(), ReadFloat(), ReadFloat());
+        }
+
+        /// <summary>
+        /// Read QuaternionD
+        /// </summary>
+        /// <returns>QuaternionD</returns>
+        public QuaternionD ReadQuaternionD()
+        {
+            return new QuaternionD(
+                ReadDouble(), ReadDouble(), ReadDouble(), ReadDouble());
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result with the Packet Type attached
         /// </summary>
         /// <returns>Returns compacted array</returns>

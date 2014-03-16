@@ -6,7 +6,7 @@ using System.Text;
 
 namespace KMP.Networking
 {
-    public class AbstractPacket
+    public abstract class AbstractPacket
     {
         /// <summary>
         /// The type of packet

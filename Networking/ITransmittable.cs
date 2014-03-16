@@ -7,7 +7,7 @@ namespace KMP.Networking
 {
     public interface ITransmittable
     {
-        public void TransmitObject(NetworkMessage message);
-        public void ReceiveObject(NetworkMessage message);
+        void TransmitObject(NetworkMessage message);
+        void ReceiveObject(NetworkMessage message);
     }
 }

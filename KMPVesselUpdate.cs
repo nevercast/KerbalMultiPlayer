@@ -219,7 +219,7 @@ namespace KMP
 		/// <summary>
 		/// Rotation quat
 		/// </summary>
-		public Vector4 rot;
+		public Quaternion rot;
 		
 		public ConfigNode protoVesselNode = null;
 		public Guid kmpID = Guid.Empty;
@@ -248,6 +248,16 @@ namespace KMP
         public new void TransmitObject(NetworkMessage message)
         {
             base.TransmitObject(message); // Load parent class data first
+            message.WriteString(name);
+            message.WriteString(player);
+            message.WriteGuid(id);
+            message.WriteVector(pos);
+            message.WriteVector(dir);
+            message.WriteVector(vel);
+            message.WriteVector(o_vel);
+            message.WriteVector(s_vel);
+            message.WriteVector(w_pos);
+            message.WriteQuaternion(rot);
         }
 
         public new void ReceiveObject(NetworkMessage message)
@@ -258,13 +268,13 @@ namespace KMP
 		
 		public KMPVesselUpdate(Guid gameGuid, ConfigNode protoVessel)
         {
-           	pos = new float[3];
-            dir = new float[3];
-            vel = new float[3];
-			o_vel = new double[3];
-			s_vel = new double[3];
-			w_pos = new double[3];
-			rot = new float[4];
+            pos = new Vector3();
+            dir = new Vector3();
+            vel = new Vector3();
+            o_vel = new Vector3d();
+            s_vel = new Vector3d();
+            w_pos = new Vector3d();
+            rot = new Quaternion();
 			id = gameGuid;
 			flightCtrlState = new KMPFlightCtrlState(new FlightCtrlState());
 			protoVesselNode = protoVessel;
@@ -272,13 +282,13 @@ namespace KMP
 		
         private void InitKMPVesselUpdate(Vessel _vessel, bool includeProtoVessel)
         {
-            pos = new float[3];
-            dir = new float[3];
-            vel = new float[3];
-			o_vel = new double[3];
-			s_vel = new double[3];
-			w_pos = new double[3];
-			rot = new float[4];
+            pos = new Vector3();
+            dir = new Vector3();
+            vel = new Vector3();
+            o_vel = new Vector3d();
+            s_vel = new Vector3d();
+            w_pos = new Vector3d();
+            rot = new Quaternion();
 			id = _vessel.id;
 			if (_vessel.packed)
 			{
