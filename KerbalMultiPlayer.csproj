@@ -53,7 +53,9 @@
     <Compile Include="KMPMenuItem.cs" />
     <Compile Include="Logger.cs" />
     <Compile Include="Networking\AbstractPacket.cs" />
-    <Compile Include="Networking\NetworkManager.cs" />
+    <Compile Include="Networking\ITransmittable.cs" />
+    <Compile Include="Networking\NetworkConnection.cs" />
+    <Compile Include="Networking\NetworkHelper.cs" />
     <Compile Include="Networking\NetworkMessage.cs" />
     <Compile Include="Networking\Packets\HandshakePacket.cs" />
     <Compile Include="Networking\PriorityQueue.cs" />
