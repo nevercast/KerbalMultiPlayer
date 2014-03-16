@@ -38,5 +38,7 @@ namespace KMP.Networking.Transport
                 Log.Warning("NetworkDataTransport({1}) receive queue is overloaded: {0} pending packets", DataQueue.Count, this);
             }
         }
+
+        public abstract bool Connected { get; }
     }
 }

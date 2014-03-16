@@ -29,6 +29,11 @@ namespace KMP.Networking.Transport
             Client.GetStream().Flush();
         }
 
+        public bool Connected
+        {
+            get { return Client.Connected; }
+        }
+
         private void Run()
         {
             try

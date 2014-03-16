@@ -95,5 +95,13 @@ namespace KMP.Networking
             }
         }
 
+        public bool Connected
+        {
+            get
+            {
+                return Transport.Connected;
+            }
+        }
+
     }
 }
