@@ -59,6 +59,8 @@
     <Compile Include="Networking\NetworkMessage.cs" />
     <Compile Include="Networking\Packets\HandshakePacket.cs" />
     <Compile Include="Networking\PriorityQueue.cs" />
+    <Compile Include="Networking\Transport\NetworkDataTransport.cs" />
+    <Compile Include="Networking\Transport\TCPTransport.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenshotSettings.cs" />
     <Compile Include="KMPChatDisplay.cs" />
