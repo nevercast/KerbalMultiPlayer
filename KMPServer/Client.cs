@@ -8,6 +8,7 @@ using System.Threading;
 using System.Net;
 using System.Collections;
 using System.Collections.Concurrent;
+using KMP.Networking;
 
 namespace KMPServer
 {
@@ -63,7 +64,7 @@ namespace KMPServer
 		public long lastInFlightActivityTime;
 		public ActivityLevel activityLevel;
 
-		public TcpClient tcpClient;
+		public NetworkConnection tcpClient;
 
 		public object tcpClientLock = new object();
 		public object timestampLock = new object();

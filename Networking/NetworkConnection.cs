@@ -58,7 +58,7 @@ namespace KMP.Networking
                     if (OutboundQueue.Count > 0)
                     {
                         var packet = OutboundQueue.Dequeue();
-                        Transport.Transmit(packet.BuildPacket(KMPCommon.Side));
+                        Transport.Send(packet.BuildPacket(KMPCommon.Side));
                         continue;
                     }
                     // And then handle the processing of all the received ones, which is slower
