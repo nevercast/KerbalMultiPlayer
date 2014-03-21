@@ -54,6 +54,7 @@
     <Compile Include="Logger.cs" />
     <Compile Include="Networking\AbstractPacket.cs" />
     <Compile Include="Networking\ConfigNodeSerializer.cs" />
+    <Compile Include="Networking\Frames\SegmentFrame.cs" />
     <Compile Include="Networking\ITransmittable.cs" />
     <Compile Include="Networking\NetworkConnection.cs" />
     <Compile Include="Networking\NetworkConnectionListener.cs" />
@@ -63,6 +64,7 @@
     <Compile Include="Networking\PriorityQueue.cs" />
     <Compile Include="Networking\Transport\NetworkDataTransport.cs" />
     <Compile Include="Networking\Transport\TCPTransport.cs" />
+    <Compile Include="Networking\Util\Hash.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ScreenshotSettings.cs" />
     <Compile Include="KMPChatDisplay.cs" />
