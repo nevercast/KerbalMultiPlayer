@@ -7,7 +7,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPServer", "KMPServer\KMPS
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KMPServerList", "KMPServerList\KMPServerList.csproj", "{4FEE872E-5A08-4579-93F6-B700AA2D79F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkTesting", "..\NetworkTesting\NetworkTesting.csproj", "{C1C75876-B6E1-4996-B416-6ACE138003C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetworkTesting", "NetworkTesting\NetworkTesting.csproj", "{C1C75876-B6E1-4996-B416-6ACE138003C2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
