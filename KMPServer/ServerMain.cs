@@ -20,7 +20,7 @@ namespace KMPServer
 
 		static void Main(string[] args)
 		{
-            KMPCommon.Side = KMP.Networking.PacketSide.Server;
+            KMPCommon.Side = KMP.Networking.Packets.PacketSide.Server;
 
             if (!System.IO.Directory.Exists(Server.MODS_PATH))
             {

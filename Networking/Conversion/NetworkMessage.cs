@@ -56,7 +56,7 @@ namespace KMP.Networking.Conversion
         {
             byte[] newData = new byte[data.Length];
             Array.Copy(data, newData, data.Length);
-            return new NetworkMessage() { Data = newData, cursor = newData.Length };
+            return new NetworkMessage() { Data = newData, cursor = 0 };
         }
 
         /// <summary>
@@ -338,7 +338,16 @@ namespace KMP.Networking.Conversion
         public void WriteEnum<T>(T e) where T: struct, IConvertible
         {
             if(!typeof(T).IsEnum) throw new ArgumentException("Type for WriteEnum is not an Enum");
-            var intValue = (int)Convert.ChangeType(e, e.GetTypeCode());
+            var boxedValue = Convert.ChangeType(e, e.GetTypeCode());
+            int intValue = 0;
+            if (boxedValue is Byte)
+                intValue = (int)(byte)boxedValue;
+            else if (boxedValue is Int16)
+                intValue = (int)(Int16)boxedValue;
+            else if (boxedValue is Int32)
+                intValue = (int)boxedValue;
+            else
+                throw new NotSupportedException(String.Format("Unsuppported Enum typecode {0}", e.GetTypeCode()));
             WriteInt(intValue);
         }
 

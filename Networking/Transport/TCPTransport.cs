@@ -31,7 +31,7 @@ namespace KMP.Networking.Transport
 
         public override bool Connected
         {
-            get { return Client.Connected; }
+            get { return Client == null ? false : Client.Connected; }
         }
 
         private void Run()
@@ -56,6 +56,12 @@ namespace KMP.Networking.Transport
                         while (c < length)
                         {
                             c += Client.GetStream().Read(tmpBuffer, c, length - c);
+                        }
+                        if (tmpBuffer == packetBuffer && length < packetBuffer.Length)
+                        {
+                            var finalBuffer = new byte[length];
+                            Array.Copy(tmpBuffer, finalBuffer, length);
+                            tmpBuffer = finalBuffer;
                         }
                         OnDataArrived(tmpBuffer);
 

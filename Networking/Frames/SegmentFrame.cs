@@ -75,8 +75,8 @@ namespace KMP.Networking.Frames
             List<SegmentFrame> segments = new List<SegmentFrame>();
             for (long i = 0; i < completeData.LongLength; i += SEGMENT_SIZE)
             {
-                byte[] data = new byte[SEGMENT_SIZE];
-                Array.Copy(completeData, i, data, 0, i + SEGMENT_SIZE >= completeData.LongLength ? completeData.LongLength - 1 : SEGMENT_SIZE);
+                byte[] data = new byte[i + SEGMENT_SIZE >= completeData.LongLength ? completeData.LongLength - 1 : SEGMENT_SIZE];
+                Array.Copy(completeData, i, data, 0, data.Length);
                 var segment = CreateSegment(init, data, i);
                 segment.Priority = priority;
                 segments.Add(segment);

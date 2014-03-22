@@ -44,6 +44,41 @@ namespace KMP.Networking
             return packet.BuildPacket(KMPCommon.Side);
         }
         #endregion
+
+        #region Packet Creation Helpers
+
+        public static HandshakePacket ClientHandshake(String username, Guid token, String clientVersion)
+        {
+            return new HandshakePacket()
+            {
+                Username = username,
+                ClientToken = token,
+                Version = clientVersion
+            };
+        }
+
+        public static HandshakePacket AcceptClient(String serverVersion, int clientId, byte gamemode, int totalVessels, String modControlInfo)
+        {
+            return new HandshakePacket()
+            {
+                Accepted = true,
+                Version = serverVersion,
+                ClientID = clientId,
+                GameMode = gamemode,
+                VesselCount = totalVessels,
+                ModControlSettings = modControlInfo
+            };
+        }
+
+        public static HandshakePacket RejectClient(String rejectReason)
+        {
+            return new HandshakePacket()
+            {
+                Accepted = false,
+                RejectReason = rejectReason
+            };
+        }
+        #endregion
     }
     
 }

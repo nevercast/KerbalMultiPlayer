@@ -34,7 +34,6 @@ namespace KMP.Networking.Transport
         private Queue<byte[]> DataQueue = new Queue<byte[]>();
         protected void OnDataArrived(byte[] message)
         {
-            SegmentBuilder.Issue(message);
             DataQueue.Enqueue(message);
             if (MessageArrived != null)
             {
@@ -58,6 +57,7 @@ namespace KMP.Networking.Transport
 
         private void OutboundPump()
         {
+            while (!Connected) Thread.Sleep(100); /* Wait for subclass to connect */
             while (Connected)
             {
                 if (OutputOrderedData.Count > 0)
