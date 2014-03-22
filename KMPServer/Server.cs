@@ -2031,7 +2031,7 @@ namespace KMPServer
         {
             //Message format: clientsendtick(8), serverreceivetick(8), serversendtick(8). The server send tick gets added during actual sending.
             byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.SYNC_TIME, data); //This has already been rewritten in the queueClientMessage.
-            cl.queueOutgoingMessage(message_bytes); //This is still re-written during the actual send.
+            cl.SendMessage(message_bytes); //This is still re-written during the actual send.
             Log.Debug("{0} time sync request", cl.username);
         }
 
@@ -2779,7 +2779,7 @@ namespace KMPServer
 
             foreach (var client in clients.ToList().Where(cl => cl.isReady && cl != exclude))
             {
-                client.queueOutgoingMessage(message_bytes);
+                client.SendMessage(message_bytes);
             }
             Log.Debug("[Server] message sent to all.");
         }
@@ -2797,7 +2797,7 @@ namespace KMPServer
 
             foreach (var client in clients.ToList().Where(cl => cl.isReady && cl != exclude))
             {
-                client.queueOutgoingMessage(message_bytes);
+                client.SendMessage(message_bytes);
             }
         }
 
@@ -2808,7 +2808,7 @@ namespace KMPServer
 
             foreach (var client in clients.ToList().Where(cl => cl.isReady && cl != exclude && isAdmin(cl.username)))
             {
-                client.queueOutgoingMessage(message_bytes);
+                client.SendMessage(message_bytes);
             }
         }
 
@@ -3064,16 +3064,16 @@ namespace KMPServer
                     && (cl.activityLevel == Client.ActivityLevel.IN_GAME || cl.lastTick > 0d))
                 {
                     if (OwnerID == client.playerID)
-                        client.queueOutgoingMessage(owned_message_bytes);
+                        client.SendMessage(owned_message_bytes);
                     else
-                        client.queueOutgoingMessage(message_bytes);
+                        client.SendMessage(message_bytes);
                 }
                 else if (!secondaryUpdate
                         && !client.warping && !cl.warping
                         && (cl.activityLevel == Client.ActivityLevel.IN_GAME || cl.lastTick > 0d)
                         && firstSubspaceIsPresentOrFutureOfSecondSubspace(client.currentSubspaceID, cl.currentSubspaceID))
                 {
-                    client.queueOutgoingMessage(past_message_bytes);
+                    client.SendMessage(past_message_bytes);
                 }
                 else if (!secondaryUpdate && (cl.activityLevel == Client.ActivityLevel.IN_GAME || cl.lastTick > 0d))
                 {
@@ -3089,7 +3089,7 @@ namespace KMPServer
                         infoOnly_data = ObjectToByteArray(vessel_info);
                     }
                     byte[] infoOnly_message_bytes = buildMessageArray(KMPCommon.ServerMessageID.PLUGIN_UPDATE, infoOnly_data);
-                    client.queueOutgoingMessage(infoOnly_message_bytes);
+                    client.SendMessage(infoOnly_message_bytes);
                 }
             }
         }
@@ -3185,7 +3185,7 @@ namespace KMPServer
                 }
 
                 if (match)
-                    client.queueOutgoingMessage(message_bytes);
+                    client.SendMessage(message_bytes);
             }
         }
 
@@ -3213,7 +3213,7 @@ namespace KMPServer
 
             foreach (var client in clients.ToList().Where(c => c.isValid))
             {
-                client.queueOutgoingMessage(message_bytes);
+                client.SendMessage(message_bytes);
             }
         }
 
@@ -3263,7 +3263,7 @@ namespace KMPServer
             BitConverter.GetBytes(subspaceTime).CopyTo(timesyncdata, 8);
             BitConverter.GetBytes(subspaceSpeed).CopyTo(timesyncdata, 16);
             byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.SYNC, timesyncdata);
-            cl.queueOutgoingMessage(message_bytes);
+            cl.SendMessage(message_bytes);
         }
 
         private void sendSyncMessageToSubspace(int subspaceID)
@@ -3346,19 +3346,19 @@ namespace KMPServer
         private void sendSyncCompleteMessage(Client cl)
         {
             byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.SYNC_COMPLETE, null);
-            cl.queueOutgoingMessage(message_bytes);
+            cl.SendMessage(message_bytes);
         }
 
         private void sendVesselMessage(Client cl, byte[] data)
         {
             byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.PLUGIN_UPDATE, data);
-            cl.queueOutgoingMessage(message_bytes);
+            cl.SendMessage(message_bytes);
         }
 
         private void sendScenarioMessage(Client cl, byte[] data)
         {
             byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.SCENARIO_UPDATE, data);
-            cl.queueOutgoingMessage(message_bytes);
+            cl.SendMessage(message_bytes);
         }
 
         private byte[] serverSettingBytes()

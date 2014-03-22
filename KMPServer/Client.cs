@@ -445,11 +445,11 @@ namespace KMPServer
 
 		public void queueOutgoingMessage(KMPCommon.ServerMessageID id, byte[] data)
 		{
-			queueOutgoingMessage(Server.buildMessageArray(id, data));
+			SendMessage(Server.buildMessageArray(id, data));
 		}
 
 
-		public void queueOutgoingMessage(byte[] message_bytes)
+		public void SendMessage(byte[] message_bytes)
 		{
 			//Figure out if this is a high or low priority message
 			int sortMessageId = KMPCommon.intFromBytes(message_bytes, 0);
