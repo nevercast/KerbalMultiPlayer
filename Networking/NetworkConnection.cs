@@ -1,4 +1,6 @@
-﻿using KMP.Networking.Transport;
+﻿using KMP.Networking.Packets;
+using KMP.Networking.Transport;
+using KMP.Networking.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,13 +29,16 @@ namespace KMP.Networking
             new Thread(QueuePumpLoop).Start();
         }
 
-        // When a packet arrives over the transport, use the helper to give us a packet
+        // When a packet arrives over the transport, send it to the segment builder to build the segments in to a packet
         private void transport_MessageArrived(byte[] data)
         {
-            var packet = NetworkHelper.CreatePacket(data);
-            // Now that we have a packet, place it in the prioritized queue
-            PacketQueue.Enqueue(packet, packet.PacketPriority);
-            // That's all the time we spend in this thread, lowering network latency
+            var packet = SegmentBuilder.Issue(data);
+            if (packet != null) /* Null if the packet is incomplete */
+            {
+                // Now that we have a packet, place it in the prioritized queue
+                PacketQueue.Enqueue(packet, packet.PacketPriority);
+                // That's all the time we spend in this thread, lowering network latency
+            }
         }
 
         /// <summary>
@@ -58,7 +63,7 @@ namespace KMP.Networking
                     if (OutboundQueue.Count > 0)
                     {
                         var packet = OutboundQueue.Dequeue();
-                        Transport.Send(packet.BuildPacket(KMPCommon.Side));
+                        Transport.Send(packet);
                         continue;
                     }
                     // And then handle the processing of all the received ones, which is slower

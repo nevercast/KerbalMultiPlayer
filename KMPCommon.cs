@@ -1,5 +1,6 @@
 using ICSharpCode.SharpZipLib.GZip;
 using KMP.Networking;
+using KMP.Networking.Packets;
 using System;
 using System.IO;
 using System.Linq;

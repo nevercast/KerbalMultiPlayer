@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KMP.Networking
+namespace KMP.Networking.Util
 {
     /// <summary>
     /// Prioritized Queue
@@ -68,7 +68,7 @@ namespace KMP.Networking
     /// <summary>
     /// Specifies the queue that the packet will be placed in
     /// </summary>
-    public enum Priority
+    public enum Priority : byte
     {
         High,
         Normal,

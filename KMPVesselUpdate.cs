@@ -5,6 +5,7 @@ using System.Text;
 using UnityEngine;
 using System.Runtime.Serialization;
 using KMP.Networking;
+using KMP.Networking.Conversion;
 
 namespace KMP
 {

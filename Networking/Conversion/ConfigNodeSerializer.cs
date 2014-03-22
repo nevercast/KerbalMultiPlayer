@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Runtime.Serialization.Formatters.Binary;
 
-namespace KMP.Networking
+namespace KMP.Networking.Conversion
 {
     /// <summary>
     /// (De)Serializes ConfigNode objects. 

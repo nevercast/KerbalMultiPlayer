@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace KMP.Networking
+namespace KMP.Networking.Conversion
 {
     public interface ITransmittable
     {

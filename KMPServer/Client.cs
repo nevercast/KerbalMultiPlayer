@@ -9,7 +9,6 @@ using System.Net;
 using System.Collections;
 using System.Collections.Concurrent;
 using KMP.Networking;
-
 namespace KMPServer
 {
 	class Client

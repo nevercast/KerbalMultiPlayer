@@ -21,7 +21,7 @@ namespace KMP.Networking.Transport
             new Thread(Run).Start();
         }
 
-        public override void Transmit(byte[] data)
+        protected override void Transmit(byte[] data)
         {
             var header = BitConverter.GetBytes(data.Length);
             Client.GetStream().Write(header, 0, 4);
@@ -29,7 +29,7 @@ namespace KMP.Networking.Transport
             Client.GetStream().Flush();
         }
 
-        public bool Connected
+        public override bool Connected
         {
             get { return Client.Connected; }
         }

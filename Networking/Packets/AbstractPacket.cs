@@ -1,13 +1,16 @@
-﻿using System;
+﻿using KMP.Networking.Conversion;
+using KMP.Networking.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace KMP.Networking
+namespace KMP.Networking.Packets
 {
     public abstract class AbstractPacket
     {
+     
         /// <summary>
         /// The type of packet
         /// </summary>
@@ -45,8 +48,9 @@ namespace KMP.Networking
         /// <param name="side">The side that is going to send the packet</param>
         public byte[] BuildPacket(PacketSide side)
         {
-            using (NetworkMessage message = new NetworkMessage(PacketType))
+            using (NetworkMessage message = new NetworkMessage())
             {
+                message.WriteEnum<PacketType>(PacketType);
                 PreparePacket(message, side);
                 return message.GetPacket();
             }
@@ -61,9 +65,10 @@ namespace KMP.Networking
         {
             using (NetworkMessage message = NetworkMessage.BuildFromData(data))
             {
-                if (message.Type != PacketType)
+                var type = message.ReadEnum<PacketType>();
+                if (type != PacketType)
                 {
-                    throw new IOException(String.Format("Packet type {1} cannot be derived from {0}", message.Type, PacketType));
+                    throw new IOException(String.Format("Packet type {1} cannot be derived from {0}", type, PacketType));
                 }
                 DecodePacket(message, side);
             }
@@ -84,5 +89,14 @@ namespace KMP.Networking
     {
         Client,
         Server
+    }
+
+    /// <summary>
+    /// Type of packet
+    /// </summary>
+    public enum PacketType
+    {
+        Handshake   /* Client: Username, Version */
+        /* Server: ResponseCode, Protocol, Version, ClientID, Mode */
     }
 }

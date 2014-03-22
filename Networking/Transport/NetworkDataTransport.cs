@@ -1,8 +1,13 @@
-﻿using System;
+﻿using KMP.Networking.Conversion;
+using KMP.Networking.Frames;
+using KMP.Networking.Packets;
+using KMP.Networking.Util;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 
 namespace KMP.Networking.Transport
 {
@@ -11,14 +16,14 @@ namespace KMP.Networking.Transport
     /// </summary>
     public abstract class NetworkDataTransport
     {
+        protected NetworkDataTransport()
+        {
+            (new Thread(OutboundPump) { IsBackground = true, Name = "Outbound Segment pump" }).Start();
+        }
+
         protected abstract void Transmit(byte[] packet);
         public event AsyncMessageCallback MessageArrived;
         public delegate void AsyncMessageCallback(byte[] packet);
-
-        /// <summary>
-        /// Receiving
-        /// </summary>
-        private Dictionary<int, byte[]> PacketFragments = new Dictionary<int, byte[]>();
 
         /// <summary>
         /// Transmitting
@@ -29,30 +34,7 @@ namespace KMP.Networking.Transport
         private Queue<byte[]> DataQueue = new Queue<byte[]>();
         protected void OnDataArrived(byte[] message)
         {
-            int uid = BitConverter.ToInt32(message, 0);
-            int fragmentId = BitConverter.ToInt32(message, 4);
-            int offset = BitConverter.ToInt32(message, 8);
-            if (offset == 0)
-            {
-                // New inital packet
-                int totalLength = BitConverter.ToInt32(message, 12);
-                if (PacketFragments.ContainsKey(uid))
-                {
-                    Log.Debug("Duplicate packet fragment definition");
-                    if (PacketFragments[uid].Length != totalLength)
-                    {
-                        Log.Warning("Duplicate packet fragment size mismatch. Discarding old packet");
-                        PacketFragments.Remove(uid);
-                        PacketFragments.Add(uid, new byte[totalLength]);
-                    }
-                }
-                else
-                {
-                    PacketFragments.Add(uid, new byte[totalLength]);
-                }
-                
-            }
-            Array.Copy(message, 16, PacketFragments[uid], offset, message.Length - 16);
+            SegmentBuilder.Issue(message);
             DataQueue.Enqueue(message);
             if (MessageArrived != null)
             {
@@ -74,6 +56,21 @@ namespace KMP.Networking.Transport
             }
         }
 
+        private void OutboundPump()
+        {
+            while (Connected)
+            {
+                if (OutputOrderedData.Count > 0)
+                {
+                    Transmit(OutputOrderedData.Dequeue());
+                }
+                else
+                {
+                    Thread.Sleep(50);
+                }
+            }
+        }
+
         /// <summary>
         /// Send data over network
         /// </summary>
@@ -81,7 +78,23 @@ namespace KMP.Networking.Transport
         /// <param name="data">Data to send</param>
         public void Send(AbstractPacket packet)
         {
-
+            var segments = SegmentFrame.GetFrames(packet);
+            var packedData = packet.BuildPacket(KMPCommon.Side);
+            foreach (var segment in segments)
+            {
+                using (var msg = new NetworkMessage())
+                {
+                    msg.WriteShort(segment.SegmentNumber);
+                    msg.WriteEnum<SegmentPacketType>(segment.Type);
+                    msg.WriteLong(segment.UniqueNumber);
+                    var extraData = segment.Divide(packedData);
+                    if (extraData != null)
+                    {
+                        msg.WriteBytes(extraData);
+                    }
+                    OutputOrderedData.Enqueue(msg.GetPacket(), segment.Priority);
+                }
+            }
         }
 
         public abstract bool Connected { get; }

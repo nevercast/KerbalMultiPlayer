@@ -5,29 +5,21 @@ using System.Linq;
 using System.Text;
 using UnityEngine;
 
-namespace KMP.Networking
+namespace KMP.Networking.Conversion
 {
     public class NetworkMessage : IDisposable
     {
-        /// <summary>
-        /// Header size in bytes
-        /// Type
-        /// </summary>
-        private const int HEADER_SIZE = 1;
-
         /// <summary>
         /// The extra amonut of bytes to expand the array by to delay the next expansion
         /// </summary>
         private const int EXPAND_EXTRA = 1024;
         private readonly Encoding STRING_ENCODING = Encoding.UTF8;
-
-        public PacketType Type { get; private set; }
         public byte[] Data { get; private set; }
         private int cursor;
-        public NetworkMessage(PacketType type) :this()
+        public NetworkMessage() 
         {
-            this.Type = type;
             this.Data = new byte[1024];
+            cursor = 0;
         }
 
         /// <summary>
@@ -55,11 +47,6 @@ namespace KMP.Networking
             this.Data = newArray;
         }
 
-        private NetworkMessage()
-        {
-            cursor = 0;
-        }
-
         /// <summary>
         /// Construct NetworkMessage from build data
         /// </summary>
@@ -67,10 +54,9 @@ namespace KMP.Networking
         /// <returns>NetworkMessage</returns>
         public static NetworkMessage BuildFromData(byte[] data)
         {
-            var type = (PacketType)data[0];
-            var newData = new byte[data.Length-HEADER_SIZE];
-            Array.Copy(data, HEADER_SIZE, newData, 0, newData.Length);
-            return new NetworkMessage() { Data = newData, Type = type, cursor = newData.Length };
+            byte[] newData = new byte[data.Length];
+            Array.Copy(data, newData, data.Length);
+            return new NetworkMessage() { Data = newData, cursor = newData.Length };
         }
 
         /// <summary>
@@ -109,6 +95,16 @@ namespace KMP.Networking
                 Array.Copy(this.Data, cursor, data, 0, data.Length);
                 cursor += data.Length;
             }
+        }
+
+        /// <summary>
+        /// Returns array of remaining bytes
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ReadRemaining()
+        {
+            if (cursor >= Data.Length) return new byte[0];
+            return ReadBytes(Data.Length - cursor);
         }
 
         /// <summary>
@@ -547,15 +543,14 @@ namespace KMP.Networking
         }
 
         /// <summary>
-        /// Compacts the internal array and returns the result with the Packet Type attached
+        /// Compacts the internal array and returns the result
         /// </summary>
         /// <returns>Returns compacted array</returns>
         public byte[] GetPacket()
         {
             Compact();
-            byte[] data = new byte[this.Data.Length + HEADER_SIZE];
-            data[0] = (byte)Type;
-            Array.Copy(this.Data, 0, data, HEADER_SIZE, this.Data.Length);
+            byte[] data = new byte[this.Data.Length];
+            Array.Copy(this.Data, data, data.Length);
             return data;
         }
 
@@ -563,13 +558,5 @@ namespace KMP.Networking
         {
             this.Data = null;
         }
-    }
-
-
-
-    public enum PacketType
-    {
-        Handshake   /* Client: Username, Version */
-            /* Server: ResponseCode, Protocol, Version, ClientID, Mode */
     }
 }
