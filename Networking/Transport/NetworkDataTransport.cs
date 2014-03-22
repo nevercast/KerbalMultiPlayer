@@ -97,6 +97,11 @@ namespace KMP.Networking.Transport
             }
         }
 
+        /// <summary>
+        /// Close the transport
+        /// </summary>
+        public abstract void Close();
+
         public abstract bool Connected { get; }
     }
 }

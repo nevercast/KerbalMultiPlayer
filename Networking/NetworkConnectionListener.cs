@@ -25,7 +25,15 @@ namespace KMP.Networking
             if (Preferences.UseTcp)
             {
                 tcpListener = new TcpListener(GetTCPEP());
-                tcpListener.Start();
+                if (IsUsingIPv6)
+                {
+                    try
+                    {
+                        tcpListener.Server.SetSocketOption(SocketOptionLevel.IPv6, (SocketOptionName)27, 0);
+                    }
+                    catch { /* This not succeeding isn't a big issue */ }
+                }
+                tcpListener.Start(preferences.Backlog);
             }
 #if UDP_SUPPORT
             if (Preferences.UseUdp)
@@ -78,7 +86,7 @@ namespace KMP.Networking
         private NetworkServerPreferences() { }
         public static NetworkServerPreferences CreateTCP(String bindingAddress, int port)
         {
-            return new NetworkServerPreferences() { BindingAddress = bindingAddress, TcpPort = port, UseTcp = true };
+            return new NetworkServerPreferences() { BindingAddress = bindingAddress, TcpPort = port, UseTcp = true, Backlog = 4 };
         }
 
 #if UDP_SUPPORT
@@ -92,5 +100,7 @@ namespace KMP.Networking
             return new NetworkServerPreferences() { BindingAddress = bindingAddress, UseUdp = true, UseTcp = true, TcpPort = tcpPort, UdpPort = udpPort };
         }
 #endif
+
+        public int Backlog { get; private set; }
     }
 }

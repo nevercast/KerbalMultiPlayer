@@ -85,5 +85,23 @@ namespace KMP.Networking.Transport
                 Log.Debug("TCPTransport Thread has quit");
             }
         }
+
+        public override void Close()
+        {
+            if (Client != null)
+            {
+                try
+                {
+                    Client.Client.Disconnect(false);
+                }
+                catch { }
+                try
+                {
+                    Client.Close();
+                }
+                catch { }
+                Client = null;
+            }
+        }
     }
 }

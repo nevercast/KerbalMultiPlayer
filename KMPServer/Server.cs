@@ -2,6 +2,7 @@
 //#define SEND_UPDATES_TO_SENDER
 
 using KMP;
+using KMP.Networking;
 using MySql.Data.MySqlClient;
 using System;
 using System.Collections;
@@ -93,9 +94,7 @@ namespace KMPServer
         public ConcurrentQueue<ClientMessage> clientMessageQueue;
 
         public int clientIndex = 0;
-
         public ServerSettings.ConfigStore settings;
-
         public Stopwatch stopwatch = new Stopwatch();
 
         // BOOM! TODO: Remove all this commented code. Just leaving here for first commit to show when it was removed
@@ -111,6 +110,14 @@ namespace KMPServer
         private Boolean bHandleCommandsRunning = true;
 
         private int uncleanedBackups = 0;
+
+        
+        #region Networking
+        /// <summary>
+        /// New Network Connection Listener
+        /// </summary>
+        public NetworkConnectionListener Listener { get; private set; }
+        #endregion
 
         /// <summary>
         /// Database Helper Instance
@@ -223,17 +230,6 @@ namespace KMPServer
                 {
                 }
             }
-
-            if (udpClient != null)
-            {
-                try
-                {
-                    udpClient.Close();
-                }
-                catch { }
-            }
-
-            udpClient = null;
 
             BackupDatabase();
         }
@@ -647,41 +643,19 @@ namespace KMPServer
 
                 listenThread = new Thread(new ThreadStart(listenForClients));
                 commandThread = new Thread(new ThreadStart(handleCommands));
-                connectionThread = new Thread(new ThreadStart(handleConnections));
-                outgoingMessageThread = new Thread(new ThreadStart(sendOutgoingMessages));
+                connectionThread = new Thread(new ThreadStart(handleConnections));                
                 ghostCheckThread = new Thread(new ThreadStart(checkGhosts));
 
                 threadException = null;
-                if (settings.ipBinding == "0.0.0.0" && settings.hostIPv6 == true)
-                {
-                    settings.ipBinding = "::";
-                }
-                tcpListener = new TcpListener(IPAddress.Parse(settings.ipBinding), settings.port);
-                if (settings.hostIPv6 == true)
-                {
-                    try
-                    {
-                        //Windows defaults to v6 only, but this option does not exist in mono so it has to be in a try/catch block along with the casted int.
-                        tcpListener.Server.SetSocketOption(SocketOptionLevel.IPv6, (SocketOptionName)27, 0);
-                    }
-                    catch
-                    {
-                        Log.Debug("Failed to unset IPv6Only. Linux and Mac have this option off by default.");
-                    }
-                }
+
+                // Create new Connection listener
+                Listener = new NetworkConnectionListener(
+                    NetworkServerPreferences.CreateTCP(
+                        settings.ipBinding, 
+                        settings.port
+                    ), settings.hostIPv6);
 
                 listenThread.Start();
-
-                try
-                {
-                    udpClient = new UdpClient((IPEndPoint)tcpListener.LocalEndpoint);
-                    udpClient.BeginReceive(asyncUDPReceive, null);
-                    //udpClient.Client.AllowNatTraversal(1);
-                }
-                catch
-                {
-                    udpClient = null;
-                }
 
                 displayCommands();
 
@@ -1336,19 +1310,17 @@ namespace KMPServer
             try
             {
                 Log.Info("Listening for clients...");
-                tcpListener.Start(4);
 
                 while (true)
                 {
-                    TcpClient client = null;
+                    NetworkConnection client = null;
                     String error_message = String.Empty;
 
                     try
                     {
-                        if (tcpListener.Pending())
+                        if (Listener.Pending)
                         {
-                            client = tcpListener.AcceptTcpClient(); //Accept a TCP client
-                            client.NoDelay = true;
+                            client = Listener.Accept(); //Accept a client
                             Log.Info("New client...");
                         }
                     }
@@ -1590,44 +1562,14 @@ namespace KMPServer
             clientMessageQueue = newQueue;
         }
 
-        private void sendOutgoingMessages()
-        {
-            Thread.CurrentThread.CurrentCulture = new CultureInfo("en-GB");
-            try
-            {
-                while (true)
-                {
-                    try
-                    {
-                        foreach (var client in clients.ToList().Where(c => c.isValid).ToList())
-                        {
-                            client.sendOutgoingMessages();
-                        }
-                    }
-                    catch (NullReferenceException e)
-                    {
-                        Log.Debug("Caught NRE in sendOutgoingMessages: {0}" + e.StackTrace);
-                    }
-                    Thread.Sleep(SLEEP_TIME);
-                }
-            }
-            catch (ThreadAbortException)
-            {
-            }
-            catch (Exception e)
-            {
-                passExceptionToMain(e);
-            }
-        }
-
         //Clients
 
-        private Client addClient(TcpClient tcp_client)
+        private Client addClient(NetworkConnection client)
         {
-            if (tcp_client == null || !tcp_client.Connected || activeClientCount() >= settings.maxClients)
+            if (client == null || !client.Connected || activeClientCount() >= settings.maxClients)
                 return null;
             Client newClient = new Client(this);
-            newClient.tcpClient = tcp_client;
+            newClient.tcpClient = client;
             newClient.resetProperties();
             newClient.startReceivingMessages();
             clients.Add(newClient);

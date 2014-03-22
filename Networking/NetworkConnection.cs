@@ -57,7 +57,7 @@ namespace KMP.Networking
             Thread.CurrentThread.IsBackground = true;
             try
             {
-                while (true)
+                while (Connected)
                 {
                     // Push all our packets out because that is quick
                     if (OutboundQueue.Count > 0)
@@ -105,6 +105,21 @@ namespace KMP.Networking
             get
             {
                 return Transport.Connected;
+            }
+        }
+
+        public void Close()
+        {
+            try
+            {
+                if (Transport != null) Transport.Close();
+            }
+            catch { }
+            finally
+            {
+                Transport = null;
+                PacketQueue.Clear();
+                OutboundQueue.Clear();
             }
         }
 
