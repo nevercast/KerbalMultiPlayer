@@ -85,9 +85,6 @@ namespace KMPServer
 
         public Timer autoDekesslerTimer;
 
-        public TcpListener tcpListener;
-        public UdpClient udpClient;
-
         public HttpListener httpListener;
 
         public SynchronizedCollection<Client> clients;
@@ -1782,7 +1779,7 @@ namespace KMPServer
                         if ((currentMillisecond - client.lastUDPACKTime) > UDP_ACK_THROTTLE)
                         {
                             //Acknowledge the client's message with a TCP message
-                            client.queueOutgoingMessage(KMPCommon.ServerMessageID.UDP_ACKNOWLEDGE, null);
+                            client.SendMessage(KMPCommon.ServerMessageID.UDP_ACKNOWLEDGE, null);
                             client.lastUDPACKTime = currentMillisecond;
                             client.updateReceiveTimestamp();
                         }
@@ -1987,7 +1984,7 @@ namespace KMPServer
                             break;
 
                         case KMPCommon.ClientMessageID.PING:
-                            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.PING_REPLY, data);
+                            cl.SendMessage(KMPCommon.ServerMessageID.PING_REPLY, data);
                             break;
 
                         case KMPCommon.ClientMessageID.UDP_PROBE:
@@ -2769,7 +2766,7 @@ namespace KMPServer
             KMPCommon.intToBytes(kmpModControl.Length).CopyTo(data_bytes, 20 + version_bytes.Length);
             kmpModControl.CopyTo(data_bytes, 24 + version_bytes.Length);
 
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.HANDSHAKE, data_bytes);
+            cl.SendMessage(KMPCommon.ServerMessageID.HANDSHAKE, data_bytes);
         }
 
         private void sendServerMessageToAll(String message, Client exclude = null)
@@ -2787,7 +2784,7 @@ namespace KMPServer
         private void sendServerMessage(Client cl, String message)
         {
             UnicodeEncoding encoder = new UnicodeEncoding();
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.SERVER_MESSAGE, encoder.GetBytes(message));
+            cl.SendMessage(KMPCommon.ServerMessageID.SERVER_MESSAGE, encoder.GetBytes(message));
         }
 
         private void sendTextMessageToAll(String message, Client exclude = null)
@@ -2815,7 +2812,7 @@ namespace KMPServer
         private void sendTextMessage(Client cl, String message)
         {
             UnicodeEncoding encoder = new UnicodeEncoding();
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.SERVER_MESSAGE, encoder.GetBytes(message));
+            cl.SendMessage(KMPCommon.ServerMessageID.SERVER_MESSAGE, encoder.GetBytes(message));
         }
 
         private void sendMotdMessage(Client cl, String message)
@@ -2824,7 +2821,7 @@ namespace KMPServer
 
             foreach (var line in message.Split(new string[] { @"\n" }, StringSplitOptions.None))
             {
-                cl.queueOutgoingMessage(KMPCommon.ServerMessageID.MOTD_MESSAGE, encoder.GetBytes(line));
+                cl.SendMessage(KMPCommon.ServerMessageID.MOTD_MESSAGE, encoder.GetBytes(line));
             }
         }
 
@@ -3168,7 +3165,7 @@ namespace KMPServer
         private void sendScreenshot(Client cl, byte[] bytes)
         {
             Log.Info("Sending screenshot to player {0}", cl.username);
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.SCREENSHOT_SHARE, bytes);
+            cl.SendMessage(KMPCommon.ServerMessageID.SCREENSHOT_SHARE, bytes);
         }
 
         private void sendScreenshotToWatchers(Client cl, byte[] bytes)
@@ -3202,7 +3199,7 @@ namespace KMPServer
             name_bytes.CopyTo(bytes, 8);
             data.CopyTo(bytes, 8 + name_bytes.Length);
 
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.CRAFT_FILE, bytes);
+            cl.SendMessage(KMPCommon.ServerMessageID.CRAFT_FILE, bytes);
         }
 
         private void sendServerSettingsToAll()
@@ -3219,7 +3216,7 @@ namespace KMPServer
 
         private void sendServerSettings(Client cl)
         {
-            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.SERVER_SETTINGS, serverSettingBytes());
+            cl.SendMessage(KMPCommon.ServerMessageID.SERVER_SETTINGS, serverSettingBytes());
         }
 
         private void sendScenarios(Client cl)
@@ -3839,7 +3836,7 @@ namespace KMPServer
                     {
                         if (cl != null)
                         {
-                            cl.queueOutgoingMessage(KMPCommon.ServerMessageID.KEEPALIVE, null);
+                            cl.SendMessage(KMPCommon.ServerMessageID.KEEPALIVE, null);
                         }
                     }
                 }

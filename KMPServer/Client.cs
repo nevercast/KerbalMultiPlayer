@@ -9,6 +9,7 @@ using System.Net;
 using System.Collections;
 using System.Collections.Concurrent;
 using KMP.Networking;
+using KMP.Networking.Packets;
 namespace KMPServer
 {
 	class Client
@@ -443,34 +444,29 @@ namespace KMPServer
 			}
 		}
 
-		public void queueOutgoingMessage(KMPCommon.ServerMessageID id, byte[] data)
+		public void SendMessage(KMPCommon.ServerMessageID id, byte[] data)
 		{
 			SendMessage(Server.buildMessageArray(id, data));
 		}
 
 
-		public void SendMessage(byte[] message_bytes)
-		{
-			//Figure out if this is a high or low priority message
-			int sortMessageId = KMPCommon.intFromBytes(message_bytes, 0);
-			switch (sortMessageId) {
-						case (int)KMPCommon.ServerMessageID.HANDSHAKE:
-						case (int)KMPCommon.ServerMessageID.HANDSHAKE_REFUSAL:
-						case (int)KMPCommon.ServerMessageID.SERVER_MESSAGE:
-						case (int)KMPCommon.ServerMessageID.TEXT_MESSAGE:
-						case (int)KMPCommon.ServerMessageID.MOTD_MESSAGE:
-						case (int)KMPCommon.ServerMessageID.SERVER_SETTINGS:
-						case (int)KMPCommon.ServerMessageID.KEEPALIVE:
-						case (int)KMPCommon.ServerMessageID.CONNECTION_END:
-						case (int)KMPCommon.ServerMessageID.UDP_ACKNOWLEDGE:
-						case (int)KMPCommon.ServerMessageID.PING_REPLY:
-								queuedOutMessagesHighPriority.Enqueue(message_bytes);
-								break;
-						default:
-								queuedOutMessages.Enqueue(message_bytes);
-								break;
-			}
-		}
+        public void SendMessage(AbstractPacket packet)
+        {
+            tcpClient.SendPacket(packet);
+            // For reference, all these packets are high priority
+            /*
+                case (int)KMPCommon.ServerMessageID.HANDSHAKE:
+                case (int)KMPCommon.ServerMessageID.HANDSHAKE_REFUSAL:
+                case (int)KMPCommon.ServerMessageID.SERVER_MESSAGE:
+                case (int)KMPCommon.ServerMessageID.TEXT_MESSAGE:
+                case (int)KMPCommon.ServerMessageID.MOTD_MESSAGE:
+                case (int)KMPCommon.ServerMessageID.SERVER_SETTINGS:
+                case (int)KMPCommon.ServerMessageID.KEEPALIVE:
+                case (int)KMPCommon.ServerMessageID.CONNECTION_END:
+                case (int)KMPCommon.ServerMessageID.UDP_ACKNOWLEDGE:
+                case (int)KMPCommon.ServerMessageID.PING_REPLY:
+             */
+        }
 
 		internal void startReceivingMessages()
 		{
