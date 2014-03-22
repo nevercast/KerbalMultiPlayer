@@ -425,25 +425,6 @@ namespace KMPServer
 			}
 		}
 
-		public void splitOutgoingMessage(ref byte[] next_message)
-		{
-			//Only split messages bigger than SPLIT_MESSAGE_SIZE.
-			if (next_message.Length > KMPCommon.SPLIT_MESSAGE_SIZE) {
-				int split_index = 0;
-				while (split_index < next_message.Length) {
-					int bytes_to_read = Math.Min (next_message.Length - split_index, KMPCommon.SPLIT_MESSAGE_SIZE);
-					byte[] split_message_bytes = new byte[bytes_to_read];
-					Array.Copy (next_message, split_index, split_message_bytes, 0, bytes_to_read);
-					byte[] split_message = Server.buildMessageArray (KMPCommon.ServerMessageID.SPLIT_MESSAGE, split_message_bytes);
-					queuedOutMessagesSplit.Enqueue(split_message);
-					split_index = split_index + bytes_to_read;
-				}
-				//Return the first split message if we just split.
-				//Log.Debug("Split message into "  + queuedOutMessagesSplit.Count.ToString());
-				queuedOutMessagesSplit.TryDequeue(out next_message);
-			}
-		}
-
 		public void SendMessage(KMPCommon.ServerMessageID id, byte[] data)
 		{
 			SendMessage(Server.buildMessageArray(id, data));

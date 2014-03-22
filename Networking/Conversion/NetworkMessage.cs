@@ -552,6 +552,24 @@ namespace KMP.Networking.Conversion
         }
 
         /// <summary>
+        /// Write DateTime object
+        /// </summary>
+        /// <param name="timeObject">DateTime instance</param>
+        public void WriteDateTime(DateTime timeObject)
+        {
+            WriteLong(timeObject.Ticks);
+        }
+
+        /// <summary>
+        /// Read DateTime object
+        /// </summary>
+        /// <returns>DateTime instance</returns>
+        public DateTime ReadDateTime()
+        {
+            return new DateTime(ReadLong());
+        }
+
+        /// <summary>
         /// Compacts the internal array and returns the result
         /// </summary>
         /// <returns>Returns compacted array</returns>
