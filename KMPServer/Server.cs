@@ -3041,7 +3041,7 @@ namespace KMPServer
             long subspaceTime = DateTime.UtcNow.Ticks;
             if (subSpaceMasterTick.ContainsKey(cl.currentSubspaceID))
             {
-                double tickOffset = (double)(subspaceTime - subSpaceMasterTime[cl.currentSubspaceID]) / 10000000; //The magic number that converts 100ns to seconds.
+                double tickOffset = (double)(subspaceTime - subSpaceMasterTime[cl.currentSubspaceID]) / TimeSpan.TicksPerSecond;// 10000000; //The magic number that converts 100ns to seconds.
                 subspaceTick = subSpaceMasterTick[cl.currentSubspaceID] + tickOffset;
                 subspaceSpeed = subSpaceMasterSpeed[cl.currentSubspaceID];
                 Log.Debug("Found entry: " + tickOffset + " offset for subspace " + cl.currentSubspaceID);

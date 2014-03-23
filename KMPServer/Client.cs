@@ -72,23 +72,6 @@ namespace KMPServer
 		public object screenshotLock = new object();
 		public object watchPlayerNameLock = new object();
 		public object sharedCraftLock = new object();
-		public object sendOutgoingMessagesLock = new object();
-
-
-		public byte[] currentMessage; //Switches between holding header and message data.
-		public int currentBytesToReceive; //Switches between the bytes needed for a complete header or message.
-		public bool currentMessageHeaderRecieved; //If false, receiving header, if true, reciving message.
-		public KMPCommon.ClientMessageID currentMessageID;
-
-		private bool isServerSendingData = false;
-		private byte[] splitMessageData;
-		private int splitMessageReceiveIndex;
-
-
-
-		public ConcurrentQueue<byte[]> queuedOutMessagesHighPriority;
-		public ConcurrentQueue<byte[]> queuedOutMessagesSplit;
-		public ConcurrentQueue<byte[]> queuedOutMessages;
 		
 		public string disconnectMessage = "";
 		
