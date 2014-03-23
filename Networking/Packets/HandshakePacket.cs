@@ -36,9 +36,9 @@ namespace KMP.Networking.Packets
         // Properties sent by the server
         #region Server Properties
         /// <summary>
-        /// True if the Server has accepted a client handshake
+        /// False if the Server has accepted a client handshake
         /// </summary>
-        public bool Accepted { get; set; }
+        public bool IsRejection { get; set; }
         /// <summary>
         /// If the client has been denied connection, this will hold the reason
         /// </summary>
@@ -64,7 +64,7 @@ namespace KMP.Networking.Packets
         /// TODO: The client should send it's settings and hashes and the 
         /// server should kick the client if it's bad
         /// </summary>
-        public String ModControlSettings { get; set; }
+        public byte[] ModControlSettings { get; set; }
 
         #endregion
 
@@ -81,18 +81,18 @@ namespace KMP.Networking.Packets
                     // Client has received from server
                 case PacketSide.Client:
                     this.ProtocolVersion = message.ReadInt();
-                    this.Accepted = message.ReadBoolean();
-                    if (this.Accepted)
+                    this.IsRejection = message.ReadBoolean();
+                    if (this.IsRejection)
+                    {
+                        this.RejectReason = message.ReadString();
+                    }
+                    else
                     {
                         this.Version = message.ReadString();
                         this.ClientID = message.ReadInt();
                         this.GameMode = message.ReadByte();
                         this.VesselCount = message.ReadInt();
-                        this.ModControlSettings = message.ReadString();
-                    }
-                    else
-                    {
-                        this.RejectReason = message.ReadString();
+                        this.ModControlSettings = message.ReadByteArray();
                     }
                     break;
             }
@@ -107,8 +107,13 @@ namespace KMP.Networking.Packets
                     // Network protocol version
                     message.WriteInt(ProtocolVersion);
                     // Is the client allowed on this server
-                    message.WriteBoolean(Accepted);
-                    if (Accepted)
+                    message.WriteBoolean(IsRejection);
+                    if (IsRejection)
+                    {
+                        // Get off my lawn
+                        message.WriteString(RejectReason);
+                    }
+                    else
                     {
                         // Server Software Version
                         message.WriteString(Version);
@@ -119,12 +124,7 @@ namespace KMP.Networking.Packets
                         // Amount of Vessels in initial sync
                         message.WriteInt(VesselCount);
                         // The ModControl data
-                        message.WriteString(ModControlSettings);
-                    }
-                    else
-                    {
-                        // Get off my lawn
-                        message.WriteString(RejectReason);
+                        message.WriteByteArray(ModControlSettings);
                     }
                     break;
                     // Client is sending to server

@@ -18,6 +18,7 @@ namespace KMP.Networking
         static NetworkHelper()
         {
             PacketTypeMap.Add(PacketType.Handshake, typeof(HandshakePacket));
+            PacketTypeMap.Add(PacketType.TimeSync, typeof(TimeSyncPacket));
         }
         #endregion
 
@@ -47,6 +48,13 @@ namespace KMP.Networking
 
         #region Packet Creation Helpers
 
+        /// <summary>
+        /// Create a client handshake to connect to a server with
+        /// </summary>
+        /// <param name="username">Client username</param>
+        /// <param name="token">Client token</param>
+        /// <param name="clientVersion">Client version</param>
+        /// <returns>Handshake packet</returns>
         public static HandshakePacket ClientHandshake(String username, Guid token, String clientVersion)
         {
             return new HandshakePacket()
@@ -57,12 +65,22 @@ namespace KMP.Networking
             };
         }
 
-        public static HandshakePacket AcceptClient(String serverVersion, int clientId, byte gamemode, int totalVessels, String modControlInfo)
+        /// <summary>
+        /// Create a server handshake to send to the client
+        /// </summary>
+        /// <param name="serverVersion">Server version</param>
+        /// <param name="clientId">Client ID</param>
+        /// <param name="gamemode">Server gamemode</param>
+        /// <param name="totalVessels">Total vessels in database</param>
+        /// <param name="modControlInfo">Mod control data</param>
+        /// <returns>Handshake packet</returns>
+        public static HandshakePacket ServerHandshake(String serverVersion, int protocolVersion, int clientId, int gamemode, int totalVessels, byte[] modControlInfo)
         {
             return new HandshakePacket()
             {
-                Accepted = true,
+                IsRejection = false,
                 Version = serverVersion,
+                ProtocolVersion = protocolVersion,
                 ClientID = clientId,
                 GameMode = gamemode,
                 VesselCount = totalVessels,
@@ -74,8 +92,18 @@ namespace KMP.Networking
         {
             return new HandshakePacket()
             {
-                Accepted = false,
+                IsRejection = true,
                 RejectReason = rejectReason
+            };
+        }
+
+        public static TimeSyncPacket TimeSync(double SubspaceTick, long ServerTime, float SubspaceSpeed)
+        {
+            return new TimeSyncPacket()
+            {
+                SubspaceTick = SubspaceTick,
+                ServerTime = ServerTime,
+                SubspaceSpeed = SubspaceSpeed
             };
         }
         #endregion

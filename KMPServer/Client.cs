@@ -400,12 +400,6 @@ namespace KMPServer
 			}
 		}
 
-		public void SendMessage(KMPCommon.ServerMessageID id, byte[] data)
-		{
-			SendMessage(Server.buildMessageArray(id, data));
-		}
-
-
         public void SendMessage(AbstractPacket packet)
         {
             tcpClient.SendPacket(packet);

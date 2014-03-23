@@ -41,7 +41,7 @@ namespace KMP.Networking.Util
             {
                 return (from p in PrioritizedQueues.Keys
                  where PrioritizedQueues[p].Count > 0
-                 orderby (int)p
+                 orderby (int)p descending
                  select PrioritizedQueues[p]).FirstOrDefault();                 
             }
         }
@@ -70,8 +70,9 @@ namespace KMP.Networking.Util
     /// </summary>
     public enum Priority : byte
     {
-        High,
+        Low,
         Normal,
-        Low
+        High,
+        Realtime
     }
 }

@@ -208,11 +208,11 @@ namespace KMPServer
                 }
             }
 
-            if (tcpListener != null)
+            if (Listener != null)
             {
                 try
                 {
-                    tcpListener.Stop();
+                    Listener.Stop();
                 }
                 catch (System.Net.Sockets.SocketException)
                 {
@@ -1343,7 +1343,7 @@ namespace KMPServer
                             {
                                 //Send a handshake to the client
                                 Log.Info("Accepted client from {0}. Handshaking...", client.Client.RemoteEndPoint.ToString());
-                                sendHandshakeMessage(cl);
+                                SendHandshakeMessage(cl);
 
                                 sendMessageDirect(client, KMPCommon.ServerMessageID.NULL, null);
 
@@ -1678,77 +1678,6 @@ namespace KMPServer
             }
 
             sendServerSettingsToAll();
-        }
-
-        private void asyncUDPReceive(IAsyncResult result)
-        {
-            try
-            {
-                if (settings.ipBinding == "0.0.0.0" && settings.hostIPv6 == true)
-                {
-                    settings.ipBinding = "::";
-                }
-                IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(settings.ipBinding), settings.port);
-                if (udpClient == null) { return; }
-                byte[] received = udpClient.EndReceive(result, ref endpoint);
-                if (received.Length >= KMPCommon.MSG_HEADER_LENGTH + 4)
-                {
-                    int index = 0;
-
-                    //Get the sender index
-                    int sender_index = KMPCommon.intFromBytes(received, index);
-                    index += 4;
-
-                    //Get the message header data
-                    KMPCommon.ClientMessageID id = (KMPCommon.ClientMessageID)KMPCommon.intFromBytes(received, index);
-                    index += 4;
-
-                    int data_length = KMPCommon.intFromBytes(received, index);
-                    index += 4;
-
-                    //Get the data
-                    byte[] data = null;
-
-                    if (data_length > 0 && data_length <= received.Length - index)
-                    {
-                        data = new byte[data_length];
-                        Array.Copy(received, index, data, 0, data.Length);
-                    }
-
-                    Client client = clients.ToList().Where(c => c.isReady && c.clientIndex == sender_index).FirstOrDefault();
-                    if (client != null)
-                    {
-                        if ((currentMillisecond - client.lastUDPACKTime) > UDP_ACK_THROTTLE)
-                        {
-                            //Acknowledge the client's message with a TCP message
-                            client.SendMessage(KMPCommon.ServerMessageID.UDP_ACKNOWLEDGE, null);
-                            client.lastUDPACKTime = currentMillisecond;
-                            client.updateReceiveTimestamp();
-                        }
-
-                        //Handle the message
-                        if (data == null)
-                        {
-                            handleMessage(client, id, data);
-                        }
-                        else
-                        {
-                            byte[] messageData = KMPCommon.Decompress(data);
-                            if (messageData != null) handleMessage(client, id, messageData);
-                            //Consider adding re-request here
-                        }
-                    }
-                }
-
-                udpClient.BeginReceive(asyncUDPReceive, null); //Begin receiving the next message
-            }
-            catch (ThreadAbortException)
-            {
-            }
-            catch (Exception e)
-            {
-                passExceptionToMain(e);
-            }
         }
 
         private Client getClientByName(String name)
@@ -2601,60 +2530,11 @@ namespace KMPServer
             return msg;
         }
 
-        public static byte[] buildMessageArray(KMPCommon.ServerMessageID id, byte[] data)
+        private void sendHandshakeRefusalMessageDirect(Client cl, String reason)
         {
-            //Construct the byte array for the message
-            byte[] compressed_data = null;
-            int msg_data_length = 0;
-            if (data != null)
-            {
-                compressed_data = KMPCommon.Compress(data);
-                if (compressed_data == null)
-                    compressed_data = KMPCommon.Compress(data, true);
-                msg_data_length = compressed_data.Length;
-            }
-
-            byte[] message_bytes = new byte[KMPCommon.MSG_HEADER_LENGTH + msg_data_length];
-
-            KMPCommon.intToBytes((int)id).CopyTo(message_bytes, 0);
-            KMPCommon.intToBytes(msg_data_length).CopyTo(message_bytes, 4);
-            if (compressed_data != null)
-                compressed_data.CopyTo(message_bytes, KMPCommon.MSG_HEADER_LENGTH);
-
-            return message_bytes;
-        }
-
-        private void sendMessageDirect(TcpClient client, KMPCommon.ServerMessageID id, byte[] data)
-        {
-            try
-            {
-                byte[] message_bytes = buildMessageArray(id, data);
-                client.GetStream().Write(message_bytes, 0, message_bytes.Length);
-
-                Log.Debug("Sending message: " + id.ToString());
-            }
-            catch { }
-        }
-
-        private void sendHandshakeRefusalMessageDirect(TcpClient client, String message)
-        {
-            try
-            {
-                //Encode message
-                UnicodeEncoding encoder = new UnicodeEncoding();
-                byte[] message_bytes = encoder.GetBytes(message);
-
-                sendMessageDirect(client, KMPCommon.ServerMessageID.HANDSHAKE_REFUSAL, message_bytes);
-            }
-            catch (System.IO.IOException)
-            {
-            }
-            catch (System.ObjectDisposedException)
-            {
-            }
-            catch (System.InvalidOperationException)
-            {
-            }
+            cl.SendMessage(
+                NetworkHelper.RejectClient(reason)
+            );
         }
 
         private void sendConnectionEndMessageDirect(TcpClient client, String message)
@@ -2678,37 +2558,14 @@ namespace KMPServer
             }
         }
 
-        private void sendHandshakeMessage(Client cl)
+        private void SendHandshakeMessage(Client cl)
         {
-            //Encode version string
-            UnicodeEncoding encoder = new UnicodeEncoding();
-
-            byte[] version_bytes = encoder.GetBytes(KMPCommon.PROGRAM_VERSION);
-
-            byte[] data_bytes = new byte[version_bytes.Length + 24 + kmpModControl.Length + 1];
-
-            //Write net protocol version
-            KMPCommon.intToBytes(KMPCommon.NET_PROTOCOL_VERSION).CopyTo(data_bytes, 0);
-
-            //Write version string length
-            KMPCommon.intToBytes(version_bytes.Length).CopyTo(data_bytes, 4);
-
-            //Write version string
-            version_bytes.CopyTo(data_bytes, 8);
-
-            //Write client ID
-            KMPCommon.intToBytes(cl.clientIndex).CopyTo(data_bytes, 8 + version_bytes.Length);
-
-            //Write gameMode
-            KMPCommon.intToBytes(settings.gameMode).CopyTo(data_bytes, 12 + version_bytes.Length);
-
-            //Write number of ships in initial sync
-            KMPCommon.intToBytes(countShipsInDatabase()).CopyTo(data_bytes, 16 + version_bytes.Length);
-
-            KMPCommon.intToBytes(kmpModControl.Length).CopyTo(data_bytes, 20 + version_bytes.Length);
-            kmpModControl.CopyTo(data_bytes, 24 + version_bytes.Length);
-
-            cl.SendMessage(KMPCommon.ServerMessageID.HANDSHAKE, data_bytes);
+            var packet = NetworkHelper.ServerHandshake(
+                KMPCommon.PROGRAM_VERSION, KMPCommon.NET_PROTOCOL_VERSION, 
+                cl.clientIndex, settings.gameMode, countShipsInDatabase(),
+                kmpModControl
+            );
+            cl.SendMessage(packet);
         }
 
         private void sendServerMessageToAll(String message, Client exclude = null)
@@ -3196,13 +3053,7 @@ namespace KMPServer
                 subSpaceMasterSpeed.Add(cl.currentSubspaceID, 1f);
                 Log.Debug("Added entry for subspace " + cl.currentSubspaceID);
             }
-            //Log.Info("Time sync for: " + cl.username);
-            byte[] timesyncdata = new byte[20]; //double (8) subspace Tick, long (8) server time, float (4) subspace speed.
-            BitConverter.GetBytes(subspaceTick).CopyTo(timesyncdata, 0);
-            BitConverter.GetBytes(subspaceTime).CopyTo(timesyncdata, 8);
-            BitConverter.GetBytes(subspaceSpeed).CopyTo(timesyncdata, 16);
-            byte[] message_bytes = buildMessageArray(KMPCommon.ServerMessageID.SYNC, timesyncdata);
-            cl.SendMessage(message_bytes);
+            cl.SendMessage(NetworkHelper.TimeSync(subspaceTick, subspaceTime, subspaceSpeed));
         }
 
         private void sendSyncMessageToSubspace(int subspaceID)

@@ -8,9 +8,20 @@ using System.Text;
 
 namespace KMP.Networking.Packets
 {
+
+    /// <summary>
+    /// Type of packet
+    /// </summary>
+    public enum PacketType
+    {
+        Handshake   /* Client: Username, Version */
+            /* Server: ResponseCode, Protocol, Version, ClientID, Mode */,
+        TimeSync /* Subspace Tick, Server Time, Subspace Speed */
+
+    }
+
     public abstract class AbstractPacket
     {
-     
         /// <summary>
         /// The type of packet
         /// </summary>
@@ -19,11 +30,12 @@ namespace KMP.Networking.Packets
         /// <summary>
         /// The Priority of the Packet
         /// </summary>
-        public Priority PacketPriority { get; private set; }
+        public Priority PacketPriority { get; protected set; }
 
         protected AbstractPacket(PacketType packetType)
         {
             this.PacketType = packetType;
+            PacketPriority = Priority.Normal;
         }
 
         /// <summary>
@@ -89,14 +101,5 @@ namespace KMP.Networking.Packets
     {
         Client,
         Server
-    }
-
-    /// <summary>
-    /// Type of packet
-    /// </summary>
-    public enum PacketType
-    {
-        Handshake   /* Client: Username, Version */
-        /* Server: ResponseCode, Protocol, Version, ClientID, Mode */
     }
 }

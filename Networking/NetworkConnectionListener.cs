@@ -72,6 +72,11 @@ namespace KMP.Networking
             }
 #endif
         }
+
+        public void Stop()
+        {
+            tcpListener.Stop();
+        }
     }
 
     public class NetworkServerPreferences

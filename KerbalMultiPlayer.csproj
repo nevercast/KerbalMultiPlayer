@@ -61,6 +61,7 @@
     <Compile Include="Networking\NetworkHelper.cs" />
     <Compile Include="Networking\Conversion\NetworkMessage.cs" />
     <Compile Include="Networking\Packets\HandshakePacket.cs" />
+    <Compile Include="Networking\Packets\TimeSyncPacket.cs" />
     <Compile Include="Networking\Util\PriorityQueue.cs" />
     <Compile Include="Networking\Transport\NetworkDataTransport.cs" />
     <Compile Include="Networking\Transport\TCPTransport.cs" />
