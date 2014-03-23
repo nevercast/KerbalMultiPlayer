@@ -5,9 +5,9 @@ using System.Text;
 
 namespace KMP.Networking.Packets
 {
-    public class TimeSyncPacket : AbstractPacket
+    public class SubspaceLockPacket : AbstractPacket
     {
-        public TimeSyncPacket() : base(PacketType.TimeSync) { }
+        public SubspaceLockPacket() : base(PacketType.TimeSync) { }
 
         public double SubspaceTick { get; set; }
         public long ServerTime { get; set; }

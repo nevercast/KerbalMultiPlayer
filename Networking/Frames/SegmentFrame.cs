@@ -1,4 +1,5 @@
-﻿using KMP.Networking.Packets;
+﻿using KMP.Networking.Conversion;
+using KMP.Networking.Packets;
 using KMP.Networking.Util;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,22 @@ namespace KMP.Networking.Frames
             return new SegmentFrame(init.SegmentNumber, SegmentPacketType.Checksum, Hash.MD5(data));
         }
 
+        private static SegmentFrame CreateQuickFrame(SegmentFrame init, SegmentFrame data, SegmentFrame checksum, byte[] rawMessage)
+        {
+            Log.Debug("Packing QuickFrame");
+            using(var message = new NetworkMessage()) {
+                // Write the init data length
+                message.WriteShort((short)init.UniqueNumber);
+                // Write the segment data
+                message.WriteBytes(rawMessage);
+                // Write the checksum
+                message.WriteLong(checksum.UniqueNumber);
+                var quickFrame = CreateSegment(init, message.GetPacket(), 0);
+                quickFrame.Type = SegmentPacketType.QuickFrame;
+                return quickFrame;
+            }
+        }
+
         public Boolean IsIntegrityOkay(byte[] receivedData)
         {
             if (Type == SegmentPacketType.Checksum)
@@ -85,6 +102,11 @@ namespace KMP.Networking.Frames
             allFrames[0] = init;
             Array.Copy(segments.ToArray(), 0, allFrames, 1, segments.Count);
             allFrames[segments.Count + 1] = end;
+            if (allFrames.Length == 3) // Small fragment
+            {
+                // Create a quick frame. This helps with NTP
+                return new SegmentFrame[] { CreateQuickFrame(init, allFrames[1], end, completeData) };
+            }
             return allFrames;
         }
 
@@ -101,6 +123,11 @@ namespace KMP.Networking.Frames
     public enum SegmentPacketType : byte {
         Init,
         Segment,
-        Checksum
+        Checksum,
+        /// <summary>
+        /// Used for small packets,
+        /// encapsulates one Init, one Segment, one Checksum
+        /// </summary>
+        QuickFrame
     }
 }

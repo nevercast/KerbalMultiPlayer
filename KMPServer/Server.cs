@@ -1777,24 +1777,18 @@ namespace KMPServer
 
         public void queueClientMessage(Client cl, KMPCommon.ClientMessageID id, byte[] data)
         {
-            ClientMessage message = new ClientMessage();
-            message.client = cl;
-            message.id = id;
-            message.data = data;
-            //Write the receive time for NTP sync messages.
-            if (message.id == KMPCommon.ClientMessageID.SYNC_TIME)
-            {
-                byte[] rewriteMessage = new byte[16]; //Holds the client send time and the server receive time.
-                message.data.CopyTo(rewriteMessage, 0);
-                BitConverter.GetBytes(DateTime.UtcNow.Ticks).CopyTo(rewriteMessage, 8);
-                message.data = rewriteMessage;
-            }
             clientMessageQueue.Enqueue(message);
         }
 
         private KMPCommon.ClientMessageID[] AllowNullDataMessages = { KMPCommon.ClientMessageID.SCREEN_WATCH_PLAYER, KMPCommon.ClientMessageID.CONNECTION_END, KMPCommon.ClientMessageID.ACTIVITY_UPDATE_IN_FLIGHT, KMPCommon.ClientMessageID.ACTIVITY_UPDATE_IN_GAME, KMPCommon.ClientMessageID.SYNC_TIME };
         private KMPCommon.ClientMessageID[] AllowClientNotReadyMessages = { KMPCommon.ClientMessageID.HANDSHAKE, KMPCommon.ClientMessageID.TEXT_MESSAGE, KMPCommon.ClientMessageID.SCREENSHOT_SHARE, KMPCommon.ClientMessageID.CONNECTION_END, KMPCommon.ClientMessageID.ACTIVITY_UPDATE_IN_FLIGHT, KMPCommon.ClientMessageID.ACTIVITY_UPDATE_IN_GAME, KMPCommon.ClientMessageID.PING, KMPCommon.ClientMessageID.UDP_PROBE, KMPCommon.ClientMessageID.WARPING, KMPCommon.ClientMessageID.SSYNC, KMPCommon.ClientMessageID.SYNC_TIME };
 
+        /// <summary>
+        /// Primary handler for all things client packet like
+        /// </summary>
+        /// <param name="cl">Client sending the packet</param>
+        /// <param name="id">ID of packet</param>
+        /// <param name="data">Packet Data</param>
         public void handleMessage(Client cl, KMPCommon.ClientMessageID id, byte[] data)
         {
             lock (databaseVacuumLock)
@@ -3053,7 +3047,7 @@ namespace KMPServer
                 subSpaceMasterSpeed.Add(cl.currentSubspaceID, 1f);
                 Log.Debug("Added entry for subspace " + cl.currentSubspaceID);
             }
-            cl.SendMessage(NetworkHelper.TimeSync(subspaceTick, subspaceTime, subspaceSpeed));
+            cl.SendMessage(NetworkHelper.SubspaceLock(subspaceTick, subspaceTime, subspaceSpeed));
         }
 
         private void sendSyncMessageToSubspace(int subspaceID)

@@ -18,7 +18,7 @@ namespace KMP.Networking
         static NetworkHelper()
         {
             PacketTypeMap.Add(PacketType.Handshake, typeof(HandshakePacket));
-            PacketTypeMap.Add(PacketType.TimeSync, typeof(TimeSyncPacket));
+            PacketTypeMap.Add(PacketType.TimeSync, typeof(SubspaceLockPacket));
         }
         #endregion
 
@@ -97,9 +97,9 @@ namespace KMP.Networking
             };
         }
 
-        public static TimeSyncPacket TimeSync(double SubspaceTick, long ServerTime, float SubspaceSpeed)
+        public static SubspaceLockPacket SubspaceLock(double SubspaceTick, long ServerTime, float SubspaceSpeed)
         {
-            return new TimeSyncPacket()
+            return new SubspaceLockPacket()
             {
                 SubspaceTick = SubspaceTick,
                 ServerTime = ServerTime,

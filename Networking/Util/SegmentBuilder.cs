@@ -66,6 +66,21 @@ namespace KMP.Networking.Util
                         }
                         break;
                     }
+                case SegmentPacketType.QuickFrame:
+                    Log.Debug("Unpacking QuickFrame");
+                    // Create the frames from the segment
+                    using (NetworkMessage msg = NetworkMessage.BuildFromData(segment))
+                    {
+                        var length = msg.ReadShort();
+                        var segmentData = msg.ReadBytes(length);
+                        var checksum = msg.ReadLong();
+                        /* Issue the init */
+                        Issue(new SegmentFrame(frame.SegmentNumber, SegmentPacketType.Init, length));
+                        /* Issue the segment */
+                        Issue(new SegmentFrame(frame.SegmentNumber, SegmentPacketType.Segment, 0), segmentData);
+                        /* Issue the checksum and return the final packet */
+                        return Issue(new SegmentFrame(frame.SegmentNumber, SegmentPacketType.Checksum, checksum));
+                    }
             }
             return null;
         }
