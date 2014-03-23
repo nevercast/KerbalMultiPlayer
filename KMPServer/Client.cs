@@ -22,7 +22,6 @@ namespace KMPServer
 		}
 
 		//Repurpose SEND_BUFFER_SIZE to split large messages.
-		public const int SEND_BUFFER_SIZE = 8192;
         public const int POLL_INTERVAL = 60000;
 
 		//Properties
@@ -32,7 +31,9 @@ namespace KMPServer
 			private set;
 			get;
 		}
-		public int clientIndex;
+
+        #region Fields
+        public int clientIndex;
 		public String username;
 		public Guid guid;
 		public int playerID;
@@ -64,7 +65,7 @@ namespace KMPServer
 		public long lastInFlightActivityTime;
 		public ActivityLevel activityLevel;
 
-		public NetworkConnection tcpClient;
+		public NetworkConnection Connection { get; private set ; }
 
 		public object tcpClientLock = new object();
 		public object timestampLock = new object();
@@ -74,21 +75,28 @@ namespace KMPServer
 		public object sharedCraftLock = new object();
 		
 		public string disconnectMessage = "";
-		
-		public Client(Server parent)
+
+        #endregion
+
+        #region Constructor
+        public Client(Server parent, NetworkConnection connection)
 		{
+            this.Connection = connection;
 			this.parent = parent;
 			resetProperties();
 		}
+        #endregion
+
+        #region State Properties
 
         public bool isValid
         {
             get
             {
                // bool isConnected = false;
-                if (this.tcpClient != null && this.tcpClient.Connected)
+                if (this.Connection != null && this.Connection.Connected)
                 {                   
-                    Socket clientSocket = this.tcpClient.Client;
+                    Socket clientSocket = this.Connection.Client;
                     try
                     {
 						if (receivedHandshake)
@@ -140,12 +148,17 @@ namespace KMPServer
         {
             get
             {
-                if (tcpClient == null) { return null; }
-                return (tcpClient.Client.RemoteEndPoint as IPEndPoint).Address;
+                if (Connection == null) { return null; }
+                return (Connection.Client.RemoteEndPoint as IPEndPoint).Address;
             }
         }
 
-		public void resetProperties()
+        #endregion
+
+
+        #region Methods
+
+        public void resetProperties()
 		{
 			username = "";
 			screenshot = null;
@@ -157,10 +170,6 @@ namespace KMPServer
 			sharedCraftType = KMPCommon.CraftType.VAB;
 
 			lastUDPACKTime = 0;
-
-			queuedOutMessagesHighPriority = new ConcurrentQueue<byte[]>();
-			queuedOutMessagesSplit = new ConcurrentQueue<byte[]>();
-			queuedOutMessages = new ConcurrentQueue<byte[]>();
 
 			lock (activityLevelLock)
 			{
@@ -194,181 +203,21 @@ namespace KMPServer
 			sharedCraftName = String.Empty;
 		}
 
-		//Async read
+        #endregion
 
-		private void beginAsyncRead()
-		{
-			try
-			{
-				if (tcpClient != null)
-				{
-					currentMessage = new byte[KMPCommon.MSG_HEADER_LENGTH]; //The first data we want to receive is the header size.
-					currentMessageHeaderRecieved = false; //This is set to true while receiving the actual message and not its header.
-					currentBytesToReceive = KMPCommon.MSG_HEADER_LENGTH; //We want to receive just the header.
-					StateObject state = new StateObject();
-					state.workClient = tcpClient;
-					tcpClient.GetStream().BeginRead(currentMessage, 0, currentBytesToReceive, new AsyncCallback(asyncReceive), state);
-				}
-			}
-			catch (InvalidOperationException)
-			{
-				//parent.disconnectClient(this, "InvalidOperationException");
-				Log.Debug("Caught InvalidOperationException for player " + this.username + " in beginAsyncRead");
-				//parent.markClientForDisconnect(this);
-			}
-			catch (System.IO.IOException)
-			{
-                //parent.disconnectClient(this, "IOException");
-				Log.Debug("Caught IOException for player " + this.username + " in beginAsyncRead");
-				//parent.markClientForDisconnect(this);
-			}
-			catch (Exception e)
-			{
-				parent.passExceptionToMain(e);
-			}
-		}
+        #region Messages
+        
+        private void MessageReceived(NetworkConnection connection, AbstractPacket packet)
+        {
 
-		private void asyncReceive(IAsyncResult ar)
-		{
-			try {
-				// Retrieve the state object and the client socket 
-				// from the asynchronous state object.
-				StateObject state = (StateObject)ar.AsyncState;
-				TcpClient client = state.workClient;
-				int bytesRead = client.GetStream().EndRead(ar); // Read data from the remote device directly into the message buffer.
-				updateReceiveTimestamp();
-				currentBytesToReceive -= bytesRead; //Decrement how many bytes we have read.
-				if (bytesRead > 0) { //This is just a shortcut really
-					if (!currentMessageHeaderRecieved) {
-						//We are receiving just the header
-						if (currentBytesToReceive == 0) {
-							//We have recieved the full message header, lets process it.
-							currentMessageID = (KMPCommon.ClientMessageID)BitConverter.ToInt32(currentMessage, 0);
-							currentBytesToReceive = BitConverter.ToInt32(currentMessage, 4);
-							if (currentBytesToReceive == 0) {
-								//We received the header of a empty message, process it and reset the buffers.
-								messageReceived(currentMessageID, null);
-								currentMessageID = KMPCommon.ClientMessageID.NULL;
-								currentBytesToReceive = KMPCommon.MSG_HEADER_LENGTH;
-								currentMessage = new byte[currentBytesToReceive];
-							} else {
-								//We received the header of a non-empty message, Let's give it a buffer and read again.
-								currentMessage = new byte[currentBytesToReceive];
-								currentMessageHeaderRecieved = true;
-							}
-						}
-					} else {
-						if (currentBytesToReceive == 0) {
-							//We have received all the message data, lets decompress and process it
-							byte[] decompressedData = KMPCommon.Decompress(currentMessage);
-							messageReceived(currentMessageID, decompressedData);
-							currentMessageHeaderRecieved = false;
-							currentMessageID = KMPCommon.ClientMessageID.NULL;
-							currentBytesToReceive = KMPCommon.MSG_HEADER_LENGTH;
-							currentMessage = new byte[currentBytesToReceive];
-						}
-					}
+        }
 
-				}
-				if (currentBytesToReceive < 0) {
-					throw new System.IO.IOException("You somehow managed to read more bytes then we asked for. Good for you. Open this up on the bugtracker now.");
-				}
-				if (client != null) {
-					client.GetStream().BeginRead(currentMessage, currentMessage.Length - currentBytesToReceive, currentBytesToReceive, new AsyncCallback(asyncReceive), state);
-				}
-			}
-			catch (Exception e) {
-				//Basically, If anything goes wrong at all the stream is broken and there is no way to recover from it.
-				Log.Debug("Exception thrown in ReceiveCallback(), catch 1, Exception: {0}", e.ToString());
-			}
-		}
-
-		//Async send
-
-		private void asyncSend(IAsyncResult result)
-		{
-			try
-			{
-                if (tcpClient.Connected)
-                {
-                    tcpClient.GetStream().EndWrite(result);
-					isServerSendingData = false;
-					if (queuedOutMessagesHighPriority.Count > 0 || queuedOutMessagesSplit.Count > 0 || queuedOutMessages.Count > 0) {
-						sendOutgoingMessages();
-					}
-                }
-                else
-                {
-                    //Do we care?!
-                }
-			}
-			catch (InvalidOperationException)
-			{
-			}
-			catch (System.IO.IOException)
-			{
-			}
-			catch (ThreadAbortException)
-			{
-			}
-			catch (Exception e)
-			{
-				parent.passExceptionToMain(e);
-			}
-		}
-		
-		//Messages
-
-		private void messageReceived (KMPCommon.ClientMessageID id, byte[] data)
+        private void messageReceived (KMPCommon.ClientMessageID id, byte[] data)
 		{
 			parent.queueClientMessage (this, id, data);
 		}
 
-		public void sendOutgoingMessages()
-		{
-
-			try
-			{
-				lock (sendOutgoingMessagesLock) {
-					if ((queuedOutMessagesHighPriority.Count > 0 || queuedOutMessagesSplit.Count > 0 || queuedOutMessages.Count > 0) && !isServerSendingData)
-					{
-						//Send high priority first, then any split messages (chopped up low priority messages), and then the normal queue.
-						//Large low priorty messages get chopped up into a split message just before send.
-						byte[] next_message = null;
-						if (queuedOutMessagesHighPriority.Count > 0) {
-							queuedOutMessagesHighPriority.TryDequeue(out next_message);
-						} else {
-							if (queuedOutMessagesSplit.Count > 0) {
-									queuedOutMessagesSplit.TryDequeue(out next_message);
-							} else {
-								queuedOutMessages.TryDequeue(out next_message);
-								splitOutgoingMessage(ref next_message);
-							}
-						}
-						isServerSendingData = true;
-						syncTimeRewrite(ref next_message);
-						tcpClient.GetStream().BeginWrite(next_message, 0, next_message.Length, asyncSend, next_message);
-					}
-				}
-			}
-            // Socket closed or not connected.
-            catch (System.InvalidOperationException)
-            {
-                //parent.disconnectClient(this, "InvalidOperationException");
-				Log.Debug("Caught InvalidOperationException for player " + this.username + " in sendOutgoingMessages");
-				//parent.markClientForDisconnect(this);
-            }
-            // Raised by BeginWrite, can mean socket is down.
-            catch (System.IO.IOException)
-            {
-                //parent.disconnectClient(this, "IOException");
-				Log.Debug("Caught IOException for player " + this.username + " in sendOutgoingMessages");
-				//parent.markClientForDisconnect(this);
-            }
-            catch (System.NullReferenceException) { }
-			
-		}
-
+        /*
 		private void syncTimeRewrite(ref byte[] next_message) {
 			//SYNC_TIME Rewriting
 			int next_message_id = BitConverter.ToInt32(next_message, 0);
@@ -382,10 +231,11 @@ namespace KMPServer
 				next_message = Server.buildMessageArray(KMPCommon.ServerMessageID.SYNC_TIME, time_sync_rewrite);
 			}
 		}
+        */
 
         public void SendMessage(AbstractPacket packet)
         {
-            tcpClient.SendPacket(packet);
+            Connection.SendPacket(packet);
             // For reference, all these packets are high priority
             /*
                 case (int)KMPCommon.ServerMessageID.HANDSHAKE:
@@ -400,19 +250,11 @@ namespace KMPServer
                 case (int)KMPCommon.ServerMessageID.PING_REPLY:
              */
         }
+        #endregion
 
-		internal void startReceivingMessages()
-		{
-			beginAsyncRead();
-		}
+        #region Activity
 
-		internal void endReceivingMessages()
-		{
-		}
-
-		//Activity Level
-
-		public void updateActivityLevel(ActivityLevel level)
+        public void updateActivityLevel(ActivityLevel level)
 		{
 			bool changed = false;
 
@@ -440,9 +282,11 @@ namespace KMPServer
 
 			if (changed)
 				parent.clientActivityLevelChanged(this);
-		}
+        }
 
-	}
+        #endregion
+
+    }
 
 	public class StateObject
 	{

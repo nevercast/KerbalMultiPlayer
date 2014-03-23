@@ -203,8 +203,8 @@ namespace KMPServer
                 foreach (Client client in clients.ToList())
                 {
                     client.endReceivingMessages();
-                    if (client.tcpClient != null)
-                        client.tcpClient.Close();
+                    if (client.Connection != null)
+                        client.Connection.Close();
                 }
             }
 
@@ -1071,9 +1071,9 @@ namespace KMPServer
                 */
                 try
                 {
-                    if (client.tcpClient != null)
+                    if (client.Connection != null)
                     {
-                        client.tcpClient.Close();
+                        client.Connection.Close();
                     }
                 }
                 catch (Exception) { };
@@ -1569,7 +1569,7 @@ namespace KMPServer
             if (client == null || !client.Connected || activeClientCount() >= settings.maxClients)
                 return null;
             Client newClient = new Client(this);
-            newClient.tcpClient = client;
+            newClient.Connection = client;
             newClient.resetProperties();
             newClient.startReceivingMessages();
             clients.Add(newClient);
@@ -1582,16 +1582,16 @@ namespace KMPServer
             try
             {
                 //Send a message to client informing them why they were disconnected
-                if (cl.tcpClient != null)
+                if (cl.Connection != null)
                 {
-                    if (cl.tcpClient.Connected)
-                        sendConnectionEndMessageDirect(cl.tcpClient, message);
+                    if (cl.Connection.Connected)
+                        sendConnectionEndMessageDirect(cl.Connection, message);
 
                     //Close the socket
                     lock (cl.tcpClientLock)
                     {
                         cl.endReceivingMessages();
-                        cl.tcpClient.Close();
+                        cl.Connection.Close();
                     }
                 }
 
@@ -1625,13 +1625,13 @@ namespace KMPServer
             catch (NullReferenceException e)
             {
                 //Almost certainly need to be smarter about this.
-                cl.tcpClient = null;
+                cl.Connection = null;
 
                 Log.Info("Internal error during disconnect: {0}", e.StackTrace);
             }
             catch (InvalidOperationException)
             {
-                cl.tcpClient = null;
+                cl.Connection = null;
             }
 
             cl.receivedHandshake = false;
@@ -3072,7 +3072,7 @@ namespace KMPServer
             bool emptySubspace = true;
             foreach (Client client in clients.ToList())
             {
-                if (client != null && subspaceID == client.currentSubspaceID && client.tcpClient.Connected)
+                if (client != null && subspaceID == client.currentSubspaceID && client.Connection.Connected)
                 {
                     emptySubspace = false;
                     break;
@@ -3647,7 +3647,7 @@ namespace KMPServer
 
                     try
                     {
-                        client.tcpClient.Close();
+                        client.Connection.Close();
                     }
                     catch (Exception) { }
                     finally { foundGhost++; }
